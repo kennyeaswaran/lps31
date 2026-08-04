@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Studying for LPS 31 with an AI Assistant</title>
+<style>
+body{font:17px/1.65 system-ui,-apple-system,sans-serif;max-width:44rem;margin:3rem auto;padding:0 1.2rem;color:#1a1a1a}
+h1{font-size:1.55rem;margin-bottom:.2rem;line-height:1.25}
+.sub{color:#666;margin-top:0}
+h2{font-size:1.2rem;margin:2.4rem 0 .5rem;padding-top:1.2rem;border-top:1px solid #e3e3e3}
+h3{font-size:1rem;margin:1.5rem 0 .3rem;color:#333}
+a{color:#1a5fb4}
+code{background:#f0f0f0;padding:.08em .3em;border-radius:3px;font-size:.9em}
+blockquote{margin:.5rem 0;padding:.5rem .9rem;background:#f5f8fb;border-left:3px solid #7aa3d0;
+  font-family:ui-monospace,SFMono-Regular,monospace;font-size:.92rem;line-height:1.5}
+.note{background:#f6f6f6;border-left:3px solid #999;padding:.7rem .9rem;font-size:.95rem;margin:1.2rem 0}
+.back{font-size:.9rem;margin-bottom:1.5rem;display:block}
+ul{padding-left:1.3rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e0e0e0;color:#777;font-size:.9rem}
+</style>
+
+<a class=back href="./">← back to the course study tools</a>
+
+<h1>Studying for LPS 31 with an AI Assistant</h1>
+<p class=sub>Kenny Easwaran · Probability and Inductive Logic ·
+  <a href="mailto:k.easwaran@uci.edu">k.easwaran@uci.edu</a></p>
+
+<p>You are welcome to use ChatGPT, Claude, Gemini, or any other AI assistant to study for this
+class. Used well, it is one of the better study tools available to you. Used badly, it will feel
+productive and teach you nothing, and you will find that out during a midterm.</p>
+
+<p>Here is how to use it well.</p>
+
+<h2>Step 1: Upload the study guide first</h2>
+
+<p>Download <a href="LPS31-AI-study-guide.md" download><b>the AI study guide</b></a> from the course
+site and upload it at the start of your chat, before you ask anything.</p>
+
+<p>This matters more than you'd think. Without it, the assistant will guess what notation to use and
+what material to cover, and may not match what we are doing in this class, and what the exams will be
+graded on. With the guide, it knows our notation, our eight numbered rules, and exactly what's in
+scope.</p>
+
+<p>Start a <b>new chat</b> each time and re-upload the guide. Assistants lose track of uploaded files
+in long conversations.</p>
+
+<h2>Step 2: Ask for the right thing</h2>
+
+<p>The single biggest determinant of whether this helps you is <i>what you ask for</i>. Copy these.</p>
+
+<h3>To practice a problem type</h3>
+<blockquote>I'm in week 6 of LPS 31. Make up three new problems of the same type as Section
+Assignment 5, Problem 3. Don't show me the answers — I'll work them and you check.</blockquote>
+<blockquote>Give me five problems where I have to decide whether there's enough information to
+compute the probability. Mix them up so some are computable and some aren't.</blockquote>
+
+<h3>To check your own work</h3>
+<blockquote>Here's my truth table for this problem and here's my answer. Tell me if it's right, and
+if not, show me the first row where I went wrong — don't just give me the correct table.</blockquote>
+<blockquote>I got 3/7 for this and the answer key says 4/7. Where did I go wrong?</blockquote>
+
+<h3>To find out what you don't understand</h3>
+<blockquote>Quiz me on everything from weeks 5 through 7. Ask one question at a time, wait for my
+answer, and tell me which topics I'm weakest on at the end.</blockquote>
+<blockquote>I don't understand conditional probability. Don't explain it yet — give me three short
+problems first and figure out which step I'm actually getting stuck on.</blockquote>
+
+<h3>To practice truth tables without typing a grid</h3>
+
+<p>Typing a grid into a chat window is miserable, and you should never have to. The guide tells your
+assistant to ask for <b>one column at a time</b> — a four-row column is four keystrokes, less work
+than writing it by hand.</p>
+
+<blockquote>Drill me on truth tables one column at a time. Ask me how many rows first, then make me
+tell you which column to compute next before I fill it in.</blockquote>
+
+<p>There's also a <a href="truth-table-trainer.html"><b>Truth Table Trainer</b></a> on the course
+site — no AI needed, nothing to install. It handles all four kinds of truth-table question, makes you
+work out the row count, enumerate the rows, and choose which column to compute next, then checks each
+column as you go. Start with the assistance checkboxes all on and turn them off one at a time as you
+get comfortable; when you can finish with all of them off, try <b>exam mode</b>.</p>
+
+<h3>To get a different explanation</h3>
+<blockquote>Explain why <code>∨</code> is inclusive, using an example about [something you actually
+care about — a video game, a sport, your job, your major].</blockquote>
+<blockquote>I understand the formula <code>Pr(a | b) = Pr(a &amp; b) / Pr(b)</code> but I don't have
+any intuition for it. Give me a picture.</blockquote>
+
+<h3>To simulate the exam</h3>
+<blockquote>Give me a timed practice midterm using the sample midterm in the guide as a model, with
+different numbers. I get 50 minutes. Don't help me while I work. Grade it at the end and tell me what
+to review.</blockquote>
+
+<h3>To fix your fraction arithmetic</h3>
+<p>If fractions slow you down, say so — it's the most common bottleneck in this class and it's very
+fixable:</p>
+<blockquote>I'm slow and error-prone with fractions, especially multiplying and dividing them. Drill
+me for ten minutes with the kinds of fractions that show up in this course.</blockquote>
+
+<h2>Step 3: Know what it won't do (on purpose)</h2>
+
+<p>The study guide instructs your assistant <b>not</b> to hand you worked solutions to your actual
+homework. If you paste a homework problem, it should give you a similar problem with different
+numbers instead.</p>
+
+<p>This is deliberate, and it's not about catching you. Most of your grade comes from three
+in-person, closed-book, no-devices exams. Nobody is checking whether you copied your homework. But
+the homework is the only thing standing between you and a midterm where you have to do this cold, by
+hand, in fifty minutes. A student who copies homework arrives at the exam having never once solved
+one of these problems themselves, and it goes badly every single time.</p>
+
+<p><b>What it will happily do:</b> work through unlimited practice problems with you, check your
+completed work and find your error, explain anything from any angle, walk you through a problem once
+you've shown it your attempt, and confirm whether an answer you produced is right.</p>
+
+<p>If you've already submitted an assignment and want to understand what you got wrong, just say
+so.</p>
+
+<h2>Step 4: Watch for these failure modes</h2>
+
+<p><b>It's confidently wrong sometimes.</b> These assistants make arithmetic errors and truth-table
+errors, especially with fractions and especially when doing several problems at once. The guide
+includes a verified answer key for every sample problem, so cross-check against that. If the
+assistant contradicts the answer key, the answer key is right.</p>
+
+<p><b>Ask it to do one problem at a time.</b> When asked to solve several at once, assistants
+reliably mix up the numbers between problems. This is a known, specific failure.</p>
+
+<p><b>Don't let it do your arithmetic.</b> In the exam you have a four-function calculator and your
+own handwriting. If the assistant computes every fraction for you, you're practicing a skill you
+won't have access to. Do the arithmetic yourself and use it to check.</p>
+
+<p><b>Reading is not studying.</b> A well-explained answer feels like understanding. It usually
+isn't. Make yourself produce answers before you see them — that's the part that sticks.</p>
+
+<p><b>It will agree with you if you push.</b> If you insist an answer is right, many assistants will
+cave. Don't argue it into agreeing with you; check the answer key or ask your TA.</p>
+
+<h2>Step 5: Some things are better asked of a human</h2>
+
+<p>Come to office hours or discussion section if:</p>
+<ul>
+  <li>You disagree with the answer key, or think a problem is ambiguous.</li>
+  <li>You want to know how something will be graded, or how much partial credit something gets.</li>
+  <li>You're behind and need to figure out what to prioritize.</li>
+  <li>You've been stuck on the same concept across multiple sessions with an assistant. When an
+  explanation isn't landing, a person watching you work will spot the problem in about ninety
+  seconds.</li>
+</ul>
+
+<h2>One more thing</h2>
+
+<p>If you use the guide and something in it seems wrong, or your assistant tells you it found an
+inconsistency, please <a href="mailto:k.easwaran@uci.edu">let me know</a>. It helps me fix it for
+everyone.</p>
+
+<div class=note>
+  <b>Reminder:</b> all exams are closed book, closed notes, no internet, no AI. A simple
+  four-function calculator and blank scratch paper are permitted.
+</div>
+
+<footer>
+  <a href="./">← back to the course study tools</a> ·
+  <a href="mailto:k.easwaran@uci.edu">k.easwaran@uci.edu</a>
+</footer>

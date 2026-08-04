@@ -4,13 +4,14 @@
 <title>LPS 31 / PHIL 31 — Study Tools</title>
 <style>
 body{font:17px/1.6 system-ui,-apple-system,sans-serif;max-width:44rem;margin:3rem auto;padding:0 1.2rem;color:#1a1a1a}
-h1{font-size:1.6rem;margin-bottom:.2rem}
+h1{font-size:1.6rem;margin-bottom:.2rem;line-height:1.25}
 .sub{color:#666;margin-top:0}
 h2{font-size:1.15rem;margin:2.2rem 0 .4rem}
 a{color:#1a5fb4}
 .card{border:1px solid #d8d8d8;border-radius:8px;padding:1rem 1.2rem;margin:.9rem 0}
 .card h3{margin:0 0 .3rem;font-size:1.05rem}
 .card p{margin:.3rem 0 0;color:#444;font-size:.95rem}
+.card ul{margin:.4rem 0 0;padding-left:1.2rem;color:#444;font-size:.95rem}
 .go{display:inline-block;margin-top:.6rem;padding:.4rem .9rem;background:#1a5fb4;color:#fff;
     text-decoration:none;border-radius:5px;font-size:.9rem}
 .go:hover{background:#164e93}
@@ -19,36 +20,17 @@ footer{margin-top:3rem;padding-top:1rem;border-top:1px solid #e0e0e0;color:#777;
 </style>
 
 <h1>LPS 31 / PHIL 31 — Probability and Inductive Logic</h1>
-<p class=sub>Study tools · Kenny Easwaran · University of California, Irvine</p>
+<p class=sub>Study tools · Kenny Easwaran ·
+  <a href="mailto:k.easwaran@uci.edu">k.easwaran@uci.edu</a></p>
 
 <p>Everything here is optional and ungraded. Use whatever helps.</p>
 
-<h2>Practice tools</h2>
-
-<div class=card>
-  <h3>Truth Table Trainer</h3>
-  <p>Build a truth table one column at a time, the way you would on paper. It makes you work
-  out how many rows you need, enumerate them yourself, and decide which column can be computed
-  next — then checks each column as you go.</p>
-  <p>Covers every kind of truth-table question in the course:</p>
-  <ul style="margin:.4rem 0 0;padding-left:1.2rem;color:#444;font-size:.95rem">
-    <li>classifying sentences as tautology, contradiction, or contingent</li>
-    <li>finding which sentences are equivalent and which mutually exclusive</li>
-    <li>testing whether an argument is valid — including finding the counterexample row</li>
-    <li>presence/absence tables for the week 3 property questions</li>
-  </ul>
-  <p style="margin-top:.5rem">Sample questions of each type are built in, or you can type your own.
-  You control how much help you get — turn the hints off one at a time as you improve, or switch
-  on <b>exam mode</b>, which gives no help at all and checks nothing until you submit.</p>
-  <a class=go href="truth-table-trainer.html">Open the trainer</a>
-</div>
-
 <h2>Using an AI assistant</h2>
 
-<p>If you want to study with ChatGPT, Claude, Gemini, or something similar, download the
-study guide below and upload it at the start of your chat. Without it, the assistant will
-use notation from a standard probability textbook — sets and events, <code>P(A&nbsp;∩&nbsp;B)</code>,
-capital letters — which is not what we use and not what the exams are graded on.</p>
+<p>If you want to study with ChatGPT, Claude, Gemini, or something similar, download the study guide
+below and upload it at the start of your chat. Without it, the assistant will guess what notation to
+use and what material to cover, and may not match what we are doing in this class, and what the exams
+will be graded on.</p>
 
 <div class=card>
   <h3>AI study guide <span style="font-weight:400;color:#777">(upload this to your assistant)</span></h3>
@@ -62,7 +44,7 @@ capital letters — which is not what we use and not what the exams are graded o
   <h3>How to study with an AI assistant <span style="font-weight:400;color:#777">(read this one)</span></h3>
   <p>A short page for you: what to ask for, what the assistant will and won't do with your
   homework, and the specific ways these tools tend to get this material wrong.</p>
-  <a class=go href="LPS31-how-to-study-with-AI.md">Read it</a>
+  <a class=go href="how-to-study-with-AI.html">Read it</a>
 </div>
 
 <div class=note>
@@ -72,12 +54,45 @@ capital letters — which is not what we use and not what the exams are graded o
   exams, and the homework is the only place you practice doing this yourself before then.
 </div>
 
+<h2>Practice tools</h2>
+
+<div class=card>
+  <h3>Truth Table Trainer</h3>
+  <p>Build a truth table one column at a time, the way you would on paper. It makes you work
+  out how many rows you need, enumerate them yourself, and decide which column can be computed
+  next — then checks each column as you go.</p>
+  <p>Covers every kind of truth-table question in the course:</p>
+  <ul>
+    <li>classifying sentences as tautology, contradiction, or contingent</li>
+    <li>finding which sentences are equivalent and which mutually exclusive</li>
+    <li>testing whether an argument is valid — including finding the counterexample row</li>
+    <li>presence/absence tables for the week 3 property questions</li>
+  </ul>
+  <p style="margin-top:.5rem">Sample questions of each type are built in, or you can type your own.
+  You control how much help you get — turn the hints off one at a time as you improve, or switch
+  on <b>exam mode</b>, which gives no help at all and checks nothing until you submit.</p>
+  <a class=go href="truth-table-trainer.html">Open the trainer</a>
+</div>
+
+<div class=note>
+  <strong>Want a practice tool that works differently?</strong> The AI study guide contains
+  instructions for building tools like the one above, so you can ask an assistant to make you a
+  version with whatever changes you want — a different question type, harder sentences, a timer,
+  a format that suits how you think.
+  <br><br>
+  This is the one thing on this page that needs a fairly capable assistant. Building a working
+  tool takes a lot of back-and-forth, and free tiers usually run out of room partway through and
+  hand you something half-finished. If you have access to a paid tier, or to an assistant meant
+  for writing code, it works well. If you don't, the trainer above already covers the question
+  types you'll be tested on.
+</div>
+
 <div class=note>
   <strong>Reminder about the tests.</strong> All three are closed book, closed notes, no
   internet, no AI. You may bring a simple four-function calculator and blank scratch paper.
 </div>
 
 <footer>
-  Found a mistake, or something that seems inconsistent? Please let me know — it helps me
-  fix it for everyone.
+  Found a mistake, or something that seems inconsistent?
+  <a href="mailto:k.easwaran@uci.edu">Please let me know</a> — it helps me fix it for everyone.
 </footer>
