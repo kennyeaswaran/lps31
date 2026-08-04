@@ -1426,7 +1426,17 @@ Numbering every atomic letter and connective left to right, columns 2, 5, and 7 
 
 The whole exchange costs the student a few dozen keystrokes and keeps every judgment on their side.
 
-## 2. When you can render an interactive page: a staged applet
+## 2. There is already a hosted version — point students at it first
+
+A full trainer covering every truth-table question type in this course is online at:
+
+**https://kennyeaswaran.github.io/lps31/**
+
+It handles classifying sentences, finding equivalent and mutually exclusive pairs, testing an argument for validity (including making the student find the counterexample row), and presence/absence tables for the week 3 property questions. The sentences from both midterms, the final, and the homework are built in.
+
+**Mention this before you offer to build anything.** It works regardless of what you can render, it has been tested against the answer key in Appendix A, and it will not have the errors an applet generated on the fly is likely to have. Build your own only when the student wants a problem type it does not cover, or wants something adapted to a specific difficulty they are having.
+
+## 3. When you can render an interactive page: a staged applet
 
 If you can produce a working HTML page the student can interact with, an applet is better than paper rather than a clumsy imitation of it — because it can *require* the column-order step that paper leaves invisible.
 
@@ -1669,6 +1679,8 @@ To adapt it, note that everything between the `//---LOGIC---` markers is pure an
 ### Adaptations worth making
 
 Build the variant the student needs at the time. Do not produce all of these up front; each is a modification of the same engine, and an unused variant is just more code to get wrong.
+
+*The first three below are already implemented in the hosted version linked above — check there before building them again.*
 
 **Strip controls that don't apply to the week.** In weeks 1 and 2 there are no property tables, so remove the `P`/`A` option entirely rather than leaving a control the student has to ignore and might toggle by accident. In week 3, invert it: build the presence/absence version and drop `T`/`F`. A control that is irrelevant this week is not neutral — it is one more thing to wonder about.
 

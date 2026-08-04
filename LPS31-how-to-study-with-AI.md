@@ -46,11 +46,11 @@ Typing a grid into a chat window is miserable, and you should never have to. The
 
 > Drill me on truth tables one column at a time. Ask me how many rows first, then make me tell you which column to compute next before I fill it in.
 
-Some assistants can also build you a small interactive table you can click and type into. Worth trying once — if it works, it's the closest thing to working on paper:
+There's also a **Truth Table Trainer** on the course site — no AI needed, nothing to install:
 
-> Can you make me the interactive truth-table practice tool from Appendix C of the study guide?
+**https://kennyeaswaran.github.io/lps31/**
 
-If your assistant can't render it, don't fight with it. Ask for the column-at-a-time version instead; it works just as well and works everywhere.
+It handles all four kinds of truth-table question: classifying sentences, finding equivalent and mutually exclusive pairs, testing an argument for validity, and the week 3 presence/absence tables. The sentences from both midterms and the final are built in. It makes you work out the row count, enumerate the rows, and choose which column to compute next, then checks each column as you go — so it's practice, not an answer generator.
 
 ### To get a different explanation
 
