@@ -2,6 +2,107 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Truth Table Trainer — LPS 31</title>
+
+<!--
+  TRUTH TABLE TRAINER — LPS 31 / PHIL 31, Probability and Inductive Logic
+  Kenny Easwaran, UC Irvine · k.easwaran@uci.edu
+  Served from https://kennyeaswaran.github.io/lps31/
+
+  WHAT THIS IS
+  A drill for building truth tables by hand, covering every truth-table question type in
+  the course. Self-contained: no dependencies, no network, no storage. Question types:
+
+    · classify each sentence — tautology / contradiction / contingent
+    · compare sentences     — which are equivalent, which mutually exclusive
+    · test an argument      — valid or invalid, with the counterexample identified
+    · the same first two for properties, using presence/absence (P/A) tables — week 3 only
+
+  DESIGN PRINCIPLES
+  The point is that the student does the work, so the program does as little of it as
+  possible. Specifically:
+
+  · The student states the row count before seeing a grid, and enumerates the rows.
+  · ANY row ordering is accepted so long as every combination appears exactly once. A
+    non-standard order is noted, not marked wrong, and every later column is then checked
+    against the student's own ordering. Only genuine repeats are errors.
+  · The student chooses which column to compute next. A column is available only once the
+    columns it is built from are complete. This step does not exist on paper and is where
+    most errors originate, so it is enforced rather than assumed.
+  · Checking is ON DEMAND, per column — never live as the student types. Live validation
+    lets a student brute-force a column by toggling until the red disappears.
+  · Errors mark the offending cells and say how many, but never reveal the right values.
+
+  ASSISTANCE TOGGLES
+  Each one, when switched off, adds back a step the program had been doing. Students are
+  meant to turn them off one at a time as they improve.
+
+    auto-copy atomic letters   off → the student transcribes each atomic letter into its own
+                                     columns, with the source reference column highlighted
+    highlight legal columns    off → no green; every unfinished column stays clickable, and
+                                     an illegal pick is explained rather than prevented
+    highlight feeding columns  off → no blue; the student must see the structure unaided.
+                                     (This hint appears only AFTER a column is chosen, so it
+                                     never gives away the ordering — it counters the common
+                                     error of recomputing from the atomic letters instead of
+                                     from the immediately preceding subcolumns.)
+    auto-highlight main conn.  off → an extra step: click the main connective of each
+                                     sentence before reading anything off the table
+    definition reminders       off → the definitions of tautology, equivalence, validity and
+                                     so on are not shown. The validity step still REQUIRES
+                                     the same row selections; it just stops saying what they
+                                     are, which is the point.
+
+  EXAM MODE
+  Forces every toggle off and disables them. Two things distinguish it from simply
+  unchecking everything:
+
+  · Steps that are separate when guided happen together, because on paper they do. The
+    whole table is filled at once, and for a validity question the verdict and the row
+    selection are a single step.
+  · Nothing is checked until submission, and each cell is then judged against WHAT THE
+    STUDENT ACTUALLY WROTE in the cells feeding it, not against the correct table. A slip
+    that is then propagated consistently upward is reported once, at its origin, rather
+    than as a whole column of errors. See localExpect().
+
+  VALIDITY, in detail
+  The student first marks every row in which all the premises are true. The verdict then
+  operates on that selection rather than replacing it: "valid" leaves it untouched, and
+  "invalid" keeps those rows marked while the student picks out, from among them only, at
+  least one row where the conclusion is false (shown in a second colour over the first).
+  Rows outside the marked set are not selectable, since a row without every premise true
+  cannot be a counterexample. Keeping one selection and refining it is what makes the
+  logical structure visible.
+
+  Colour key: yellow = column being filled · green = legal to compute next · blue = the
+  columns feeding the current one · pink = main connective · purple = all premises true ·
+  orange = counterexample · red = wrong.
+
+  NOTATION
+  Course conventions, which differ from standard math-stats usage: atomic sentences are
+  lower-case letters, properties are capitals, connectives are & ∨ ∼. Input also accepts
+  ~ for ∼ and v for ∨ — but only in binary-operator position, so v can still be an atomic
+  letter. See norm().
+
+  UNRESOLVED
+  P/A classification uses "always present / never present / sometimes present" as the
+  property analogues of tautology / contradiction / contingent. The course has no stated
+  terminology for these, so this was invented and should be replaced with whatever wording
+  is actually used in lecture. Change it in askClassify() and in Appendix A of the study
+  guide together.
+
+  MAINTENANCE
+  Everything between the //---LOGIC--- markers is pure and DOM-free: lex, parse, ev, nodes
+  and deps are the whole engine, and deps() drives both the column gating and the blue
+  highlight. If you change any of it, re-check ev() against an independent evaluator before
+  shipping — a trainer that marks correct answers wrong is worse than no trainer. This file
+  is tested headlessly with jsdom: parser and evaluator over every sentence used in the
+  course, plus an end-to-end walkthrough of all nine course problem sets in every mode and
+  both main-connective toggle states.
+
+  The design rationale is written up at greater length in Appendix C of
+  LPS31-AI-study-guide.md, which also tells AI assistants how to build variants of this.
+-->
+
 <style>
 body{font:16px/1.55 system-ui,-apple-system,sans-serif;max-width:62rem;margin:2rem auto;padding:0 1rem;color:#1a1a1a}
 h2{margin:0 0 .1rem}.sub{color:#666;margin:0 0 1.2rem}
