@@ -290,7 +290,7 @@ const COLORS={
   6:'#b469a5',   // either diagonal   — not used by any problem in this course
   0:'#a54b4b'};  // the whole square  — likewise
 const colorOf=mask=>COLORS[Math.min(mask,15&~mask)];
-const S=104, PADL=66, PADT=52, PADR=70, PADB=56;
+const S=104, PADL=78, PADT=52, PADR=70, PADB=56;   // PADL leaves room for the row label boxes
 // One step of inset per cell in the region, matched to the 2px grid stroke so the bands
 // tile exactly: a 2px stroke centred 2n px in spans 2n±1, so depth 1 abuts the grid line,
 // depth 2 abuts depth 1, and so on, with no white gap and no overlap.
@@ -364,13 +364,11 @@ function start(){
   askLabels();
 }
 function askLabels(){
-  S_.stage='label';
+  S_.stage='label'; S_.lab={};
   $('stage').innerHTML=`<b>Step 1.</b> Label the square. The two atomic sentences are
     <code>${S_.atoms.join('</code> and <code>')}</code>; each axis takes one of them and its negation.
-    <div class=lab>columns: <input type=text id=c0> <input type=text id=c1></div>
-    <div class=lab>rows: &nbsp;&nbsp;&nbsp;<input type=text id=r0> <input type=text id=r1></div>
-    <button onclick=chkLabels()>Check</button>
-    <div class=hint>Write <code>∼</code> as <code>~</code> if that is easier.</div>`;
+    Type them into the boxes around the square.<br>
+    <button onclick=chkLabels()>Check</button>`;
   $('facts').innerHTML='';
   draw();
   msg('Step 1: which sentence goes across the top, and which down the side? Either order is fine.');
@@ -400,7 +398,8 @@ function work(){
   S_.stage=left?'givens':'derive';
   $('stage').innerHTML=(left
     ?`<b>Step 2.</b> Copy in the given probabilities — ${left} still to go.`
-    :`<b>Step 3.</b> Ring more regions and work out their probabilities, until you can answer.`)
+    :`<b>Step 3.</b> Ring more regions and work out their probabilities, until you have labelled
+      <code>${S_.target}</code> <b>and</b> its probability.`)
     +`<div class=given-list>`+S_.given.map(g=>
       `<div class="given${g.in?' done':''}">Pr(${g.prop}) = ${g.txt}</div>`).join('')+`</div>`
     +`<div class=lab style="margin-top:.6rem">
@@ -414,7 +413,16 @@ function work(){
 function draw(){
   const W=PADL+2*S+PADR, H=PADT+2*S+PADB;
   let s=`<svg viewBox="0 0 ${W} ${H}" width="${Math.min(W,460)}" style="max-width:100%">`;
-  if(S_.cols){
+  // In step 1 the boxes sit exactly where the labels will end up, so the student is filling
+  // in the square itself rather than a form beside it.
+  if(S_.stage==='label'){
+    const box=(id,cx,cy)=>`<foreignObject x="${cx-29}" y="${cy-16}" width="58" height="32">`
+      +`<input xmlns="http://www.w3.org/1999/xhtml" type="text" id="${id}" value="${S_.lab[id]||''}"`
+      +` oninput="S_.lab['${id}']=this.value" onkeydown="if(event.key==='Enter')chkLabels()"`
+      +` style="width:52px;text-align:center;font:17px ui-monospace,SFMono-Regular,monospace;padding:2px 0"/></foreignObject>`;
+    s+=box('c0',PADL+S/2,PADT-22)+box('c1',PADL+S+S/2,PADT-22)
+      +box('r0',PADL-36,PADT+S/2)+box('r1',PADL-36,PADT+S+S/2);
+  }else if(S_.cols){
     s+=`<text x="${PADL+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[0])}</text>`
       +`<text x="${PADL+S+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[1])}</text>`
       +`<text x="${PADL-14}" y="${PADT+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${lit(S_.rows[0])}</text>`
@@ -446,8 +454,23 @@ function draw(){
         stroke="${col}" stroke-width="1.5"/>`;
     s+=`<text x="${p.x}" y="${p.y+dy*20}" text-anchor="${p.anchor}"
         font-family=ui-monospace font-size=17 fill="${col}" font-weight=600>${f.txt}</text>`;});
+  // Clicking where a region's number goes selects that region. Single cells are already
+  // clickable as cells; these are the eight places a number sits OUTSIDE the square —
+  // the two rows, the two columns, and the four three-cell corners.
+  if(S_.stage==='givens'||S_.stage==='derive')
+    [3,12,5,10,7,11,13,14].forEach(m=>{
+      const p=labelPos(m), w=50, h=28;
+      const x=p.anchor==='start'?p.x-5:p.anchor==='end'?p.x-w+5:p.x-w/2;
+      s+=`<rect x="${x}" y="${p.y-19}" width="${w}" height="${h}" fill="transparent"
+          style="cursor:pointer" onclick="selRegion(${m})"/>`;});
   s+='</svg>';
   $('sq').innerHTML=s;
+}
+// select a whole region at once, from its number's position or from the list of facts
+function selRegion(m){
+  if(S_.stage!=='givens'&&S_.stage!=='derive')return;
+  S_.sel=m; draw();
+  msg(`Selected ${bits(m).length} cell${bits(m).length>1?'s':''}. Now give this region a proposition, a probability, or both.`);
 }
 const lit=l=>(l.neg?'∼':'')+l.atom;
 function outline(mask){
@@ -476,9 +499,10 @@ function outline(mask){
 function tog(i){if(!S_.cols||S_.stage==='done')return;S_.sel^=1<<i;draw();}
 function renderFacts(){
   $('facts').innerHTML=S_.facts.length?'<b>On the square:</b>'+S_.facts.map((f,k)=>
-    `<div class=fact><span class=chip style="background:${colorOf(f.mask)}"></span>
+    `<div class=fact style="cursor:pointer" title="click to select these cells" onclick="selRegion(${f.mask})">
+     <span class=chip style="background:${colorOf(f.mask)}"></span>
      <code>${f.prop?'Pr('+f.prop+') = ':''}${f.txt||'(region)'}</code>
-     <button class=rm onclick=rm(${k})>remove</button></div>`).join(''):'';
+     <button class=rm onclick="event.stopPropagation();rm(${k})">remove</button></div>`).join(''):'';
 }
 function rm(k){S_.facts.splice(k,1);
   S_.given.forEach(g=>{g.in=S_.facts.some(f=>f.mask===g.mask&&f.val&&feq(f.val,g.val));});
@@ -519,11 +543,18 @@ function addFact(){
   else S_.facts.push({mask,prop,val,txt:val?fstr(val):''});
   S_.given.forEach(g=>{if(g.mask===mask&&val&&feq(val,g.val))g.in=true;});
   S_.sel=0;$('fprop').value='';$('fval').value='';
-  if(val&&mask===S_.targetMask&&determined(S_.sys,mask)&&feq(val,valueOf(S_.sys,S_.targetMask))){
+  // Finished only when the target region carries BOTH a proposition and its probability:
+  // naming the region is half the exercise, so a bare number is not yet an answer.
+  const tf=S_.facts.find(f=>f.mask===S_.targetMask);
+  if(tf&&tf.prop&&tf.val&&determined(S_.sys,S_.targetMask)&&feq(tf.val,valueOf(S_.sys,S_.targetMask))){
     S_.stage='done';draw();renderFacts();$('stage').innerHTML='<button onclick=start()>Run it again</button>';
     return msg(`✓  Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}. That is the answer.`,'win');}
   work();
-  msg(S_.given.every(g=>g.in)?'Added. Keep going until you can read off the target.':'Added.');
+  if(tf&&tf.val&&!tf.prop)
+    msg(`That is the right number for the target region — now write the proposition it belongs to, so the answer reads Pr(${S_.target}) = ${tf.txt}.`);
+  else if(tf&&tf.prop&&!tf.val)
+    msg(`The target region is named. Now work out its probability.`);
+  else msg(S_.given.every(g=>g.in)?`Added. Keep going until Pr(${S_.target}) is on the square with its probability.`:'Added.');
 }
 function notEnough(){
   if(S_.stage!=='derive')return msg('Copy in the given probabilities first — until they are on the square there is nothing to judge.','err');
