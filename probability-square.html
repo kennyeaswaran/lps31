@@ -101,6 +101,7 @@ table.wit{border-collapse:collapse;margin:.5rem 0;font-family:ui-monospace,monos
 .lab{font-size:.9rem;margin:.3rem 0}
 .lab input{width:3.4rem;text-align:center}
 .hint{font-size:.86em;color:#666}
+p.opt{font-size:.9em;color:#8b2018;margin:.3rem 0}
 cell{}
 </style>
 
@@ -109,6 +110,8 @@ cell{}
 
 <p><label><b>Problem</b><br><select id=prob onchange=start()></select></label>
   <button onclick=start()>Restart</button></p>
+<p class=opt><label><input type=checkbox id=exam onchange=start()>
+  <b>Exam mode</b> — nothing is checked until you finish</label></p>
 
 <div class=q id=question></div>
 
@@ -147,7 +150,8 @@ function parseNum(s){s=String(s).trim();
 
 // ---- sentence parsing (same conventions as the truth table trainer) ----
 const NOT='∼',AND='&',OR='∨';
-function norm(s){s=s.replace(/[~!¬]/g,NOT).replace(/[|]/g,OR).replace(/[\^∧]/g,AND);
+// Accept the notations students may have met elsewhere: ~ ! ¬ - for ∼, ^ ∧ for &, | for ∨.
+function norm(s){s=s.replace(/[~!¬-]/g,NOT).replace(/[|]/g,OR).replace(/[\^∧]/g,AND);
   let o='',prev='';
   for(let i=0;i<s.length;i++){let ch=s[i];
     if(ch==='v'){let j=i+1;while(s[j]===' ')j++;const nx=s[j]||'';
@@ -357,7 +361,7 @@ function init(){
 function start(){
   const P=PROBS[+$('prob').value];
   const atoms=[]; [...P.g.map(x=>x[0]),P.t].forEach(s=>atomsOf(s).forEach(a=>{if(!atoms.includes(a))atoms.push(a);}));
-  S_={P,atoms,cols:null,rows:null,facts:[],sel:0,stage:'label',target:P.t};
+  S_={P,atoms,cols:null,rows:null,facts:[],sel:0,stage:'label',target:P.t,exam:$('exam').checked};
   $('question').innerHTML='<b>Given:</b> '+P.g.map(([p,v])=>`Pr(${p}) = ${v}`).join(' &nbsp;·&nbsp; ')
     +`<br><b>Find:</b> Pr(${P.t}) &nbsp;<span class=hint>— or decide there is not enough information</span>`;
   $('extra').innerHTML='';
@@ -368,7 +372,7 @@ function askLabels(){
   $('stage').innerHTML=`<b>Step 1.</b> Label the square. The two atomic sentences are
     <code>${S_.atoms.join('</code> and <code>')}</code>; each axis takes one of them and its negation.
     Type them into the boxes around the square.<br>
-    <button onclick=chkLabels()>Check</button>`;
+    <button onclick=chkLabels()>${S_.exam?'Next step':'Check'}</button>`;
   $('facts').innerHTML='';
   draw();
   msg('Step 1: which sentence goes across the top, and which down the side? Either order is fine.');
@@ -394,14 +398,20 @@ function chkLabels(){
   msg('Labelled. Now copy in what you were given: click the cells a given probability covers, then write the number.');
 }
 function work(){
-  const left=S_.given.filter(g=>!g.in).length;
+  // In exam mode there is no gate between copying the givens and deriving: everything is
+  // one step, and nothing is judged until the student finishes.
+  const left=S_.exam?0:S_.given.filter(g=>!g.in).length;
   S_.stage=left?'givens':'derive';
-  $('stage').innerHTML=(left
+  $('stage').innerHTML=(S_.exam
+    ?`<b>Step 2.</b> Copy in the givens, ring whatever regions you need, and label
+      <code>${S_.target}</code> with its probability — or say there is not enough information.
+      Nothing is checked until then.`
+    :left
     ?`<b>Step 2.</b> Copy in the given probabilities — ${left} still to go.`
     :`<b>Step 3.</b> Ring more regions and work out their probabilities, until you have labelled
       <code>${S_.target}</code> <b>and</b> its probability.`)
     +`<div class=given-list>`+S_.given.map(g=>
-      `<div class="given${g.in?' done':''}">Pr(${g.prop}) = ${g.txt}</div>`).join('')+`</div>`
+      `<div class="given${(!S_.exam&&g.in)?' done':''}">Pr(${g.prop}) = ${g.txt}</div>`).join('')+`</div>`
     +`<div class=lab style="margin-top:.6rem">
         proposition <input type=text id=fprop placeholder="optional" size=10>
         probability <input type=text id=fval size=5>
@@ -513,7 +523,7 @@ function addFact(){
   if(!S_.sel)return msg('Select at least one cell first — click the cells the region covers.','err');
   if(!prop&&!raw)return msg('Give the region a proposition, a probability, or both.','err');
   let mask=S_.sel;
-  if(prop){
+  if(prop&&!S_.exam){
     let pm; try{pm=regionOf(prop,S_.cols,S_.rows);}catch(e){return msg('Could not read that proposition: '+e.message,'err');}
     const extra=atomsOf(prop).filter(a=>!S_.atoms.includes(a));
     if(extra.length)return msg(`This square only has ${S_.atoms.join(' and ')}.`,'err');
@@ -525,8 +535,9 @@ function addFact(){
   if(raw){
     val=parseNum(raw);
     if(!val)return msg('Write the probability as a decimal or a fraction, like .3 or 3/10.','err');
-    if(val.n<0||fnum(val)>1)return msg('Every probability is between 0 and 1 (Rule 0).','err');
-    if(S_.stage==='givens'){
+    if(S_.exam){/* recorded as written; judged at the end */}
+    else if(val.n<0||fnum(val)>1)return msg('Every probability is between 0 and 1 (Rule 0).','err');
+    else if(S_.stage==='givens'){
       const g=S_.given.find(x=>x.mask===mask&&!x.in);
       if(!g)return msg('That is not one of the given probabilities yet. Copy the givens in first — the list beside the square shows which are still missing.','err');
       if(!feq(val,g.val))return msg(`That region is Pr(${g.prop}), which you were given as ${g.txt}.`,'err');
@@ -543,6 +554,11 @@ function addFact(){
   else S_.facts.push({mask,prop,val,txt:val?fstr(val):''});
   S_.given.forEach(g=>{if(g.mask===mask&&val&&feq(val,g.val))g.in=true;});
   S_.sel=0;$('fprop').value='';$('fval').value='';
+  if(S_.exam){
+    // finished when some region has been labelled with the target proposition and a number
+    const done=S_.facts.find(f=>f.val&&propRegion(f.prop)===S_.targetMask);
+    if(done)return examGrade(false);
+    renderFacts();draw();return msg('Recorded.');}
   // Finished only when the target region carries BOTH a proposition and its probability:
   // naming the region is half the exercise, so a bare number is not yet an answer.
   const tf=S_.facts.find(f=>f.mask===S_.targetMask);
@@ -557,6 +573,7 @@ function addFact(){
   else msg(S_.given.every(g=>g.in)?`Added. Keep going until Pr(${S_.target}) is on the square with its probability.`:'Added.');
 }
 function notEnough(){
+  if(S_.exam)return examGrade(true);
   if(S_.stage!=='derive')return msg('Copy in the given probabilities first — until they are on the square there is nothing to judge.','err');
   if(determined(S_.sys,S_.targetMask))
     return msg(`Not so — Pr(${S_.target}) is fixed by what you were given. Keep working: ring the regions you can already put a number on, and see what that forces.`,'err');
@@ -573,6 +590,49 @@ function showWitnesses(mask,claimed){
         +(fnum(dot(mask,w[0]))<=fnum(claimed)&&fnum(claimed)<=fnum(dot(mask,w[1]))
           ?`, so ${fstr(claimed)} is possible but not forced.`:`, so ${fstr(claimed)} is not even possible.`):''),'err');
   if(w)$('extra').innerHTML=witTable(w,'Both of these fit every probability you were given, and they disagree about the region you ringed:');
+}
+// the region a typed proposition picks out, or null if it cannot be read at all
+function propRegion(p){
+  if(!p)return null;
+  try{
+    if(atomsOf(p).some(a=>!S_.atoms.includes(a)))return null;
+    return regionOf(p,S_.cols,S_.rows);
+  }catch(e){return null;}}
+// Exam mode marking: everything the student wrote is judged at once, and every mistake is
+// reported rather than only the first, since there is no chance to correct as they go.
+function examGrade(claimNotEnough){
+  const det=determined(S_.sys,S_.targetMask), errs=[];
+  S_.facts.forEach(f=>{
+    const nm=f.prop?`Pr(${f.prop})`:'that region', pm=propRegion(f.prop);
+    if(f.prop&&pm===null)
+      return errs.push(`“${f.prop}” could not be read as a sentence about ${S_.atoms.join(' and ')}.`);
+    // If the sentence and the ringed cells disagree there is no telling which was meant,
+    // so say that once and do not also judge the number against the cells they ringed.
+    if(f.prop&&pm!==f.mask)
+      return errs.push(`The cells ringed for ${f.prop} are not where it is true`
+        +(bits(pm).length!==bits(f.mask).length
+          ? ` — it holds in ${bits(pm).length} of the four, and ${bits(f.mask).length} ${bits(f.mask).length===1?'was':'were'} ringed.`
+          : `; it is a different ${bits(pm).length===1?'cell':'region'} of the same size.`));
+    if(!f.val)return;
+    if(f.val.n<0||fnum(f.val)>1)errs.push(`${nm} = ${f.txt} is not between 0 and 1.`);
+    else if(f.mask===S_.targetMask&&!claimNotEnough)return;   // the answer itself, below
+    else if(!determined(S_.sys,f.mask))
+      errs.push(`${nm} is not determined by the givens, so it cannot be ${f.txt}.`);
+    else if(!feq(f.val,valueOf(S_.sys,f.mask)))
+      errs.push(`${nm} is not ${f.txt} — it is ${fstr(valueOf(S_.sys,f.mask))}.`);});
+  if(claimNotEnough&&det)
+    errs.push(`Pr(${S_.target}) is in fact determined by what you were given: it is ${fstr(valueOf(S_.sys,S_.targetMask))}.`);
+  if(!claimNotEnough){
+    if(!det)errs.push(`Pr(${S_.target}) is not determined by the givens — the answer here was that there is not enough information.`);
+    else{const tf=S_.facts.find(f=>f.val&&propRegion(f.prop)===S_.targetMask);
+      if(tf&&!feq(tf.val,valueOf(S_.sys,S_.targetMask)))
+        errs.push(`The answer is wrong: Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}, not ${tf.txt}.`);}}
+  S_.stage='done';draw();renderFacts();
+  $('stage').innerHTML='<button onclick=start()>Try it again</button>';
+  if(!errs.length)return msg(claimNotEnough
+    ?`✓  Correct — there is not enough information to determine Pr(${S_.target}). Everything you put on the square was right too, with no help.`
+    :`✓  Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}. Right first time, with no checking along the way.`,'win');
+  msg((errs.length===1?'One problem:\n· ':`${errs.length} problems:\n· `)+errs.join('\n· '),'err');
 }
 function witTable(w,caption){
   const nm=i=>{const c=i%2,r=(i/2)|0;return lit(S_.cols[c])+' & '+lit(S_.rows[r]);};

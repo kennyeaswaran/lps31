@@ -192,7 +192,8 @@ Write connectives as &amp; · ∨ (or v) · ∼ (or ~). Parentheses as usual.</d
 //---LOGIC--- (pure functions; no DOM)
 const NOT='∼',AND='&',OR='∨';
 // lower-case v means "or" only in binary-operator position, so v can still be an atomic letter
-function norm(s){s=s.replace(/[~!¬]/g,NOT).replace(/[|]/g,OR).replace(/[\^∧]/g,AND);
+// Accept the notations students may have met elsewhere: ~ ! ¬ - for ∼, ^ ∧ for &, | for ∨.
+function norm(s){s=s.replace(/[~!¬-]/g,NOT).replace(/[|]/g,OR).replace(/[\^∧]/g,AND);
   let o='',prev='';
   for(let i=0;i<s.length;i++){let ch=s[i];
     if(ch==='v'){let j=i+1;while(s[j]===' ')j++;const nx=s[j]||'';
