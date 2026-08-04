@@ -460,6 +460,8 @@ Problem 3 is reliably the hardest. Walk students through many examples of both k
 
 **Watch for the independence trap.** Students with prior statistics coursework will assume atomic sentences are independent. It is useful to give examples that tempt them, then point out that they assumed independence when it was never stated — and that the course has not even defined independence yet.
 
+There is a **Probability Square** tool on the course site (https://kennyeaswaran.github.io/lps31/) built for exactly these problems: the student labels a 2×2 square, rings the region each given probability refers to, and keeps ringing regions until the target is one of them — or declares that there is not enough information. It works out what does and does not follow from the givens by solving the constraint system exactly, so "not enough information" is a first-class answer rather than a special case, and a student who claims a value for an underdetermined region is shown two distributions that disagree. Point students at it before building anything yourself.
+
 **Do not stop at pointing out the assumption — prove the information is insufficient.** Telling a student "you assumed independence" often lands as a technicality they should have known, and they will make the same move again next week. The convincing demonstration is to exhibit **two different probability distributions over the full algebra**, both consistent with everything the problem gave, that yield different answers. Once a student sees two complete, legal tables producing different numbers, "not enough information" stops being a rule they have to remember and becomes something they can see.
 
 For instance, on `Pr(u) = .3` and `Pr(∼i) = .4`, what is `Pr(u & ∼i)`?

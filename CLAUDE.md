@@ -17,6 +17,7 @@ Related caution: the repository currently lives inside Dropbox, which is a known
 | `LPS31-AI-study-guide.md` | The main deliverable. Written **for an AI assistant to read**, uploaded by a student at the start of a chat. Course scope, notation, tutoring policy, week-by-week content, a verified answer key (Appendix A), and truth-table practice guidance (Appendix C). |
 | `how-to-study-with-AI.html` | Short student-facing page. Written for the student, not the assistant. Was a `.md` until it was converted to HTML so students read it in the browser rather than downloading it; there is deliberately no `.md` copy, to avoid two versions drifting apart. |
 | `truth-table-trainer.html` | Self-contained interactive trainer, served on the website. No dependencies, no network. |
+| `probability-square.html` | Self-contained 2×2-square drill for the week 5/6 probability problems. Decides what follows from the givens by solving the constraint system exactly (rref over rationals), so it has no stored answer key and treats "not enough information" as a real answer. Unconditional probabilities only — conditional probability is not a region of the square. |
 | `index.html` | Landing page for the site. Sections run: AI assistant → practice tools → notes → footer. |
 | `.nojekyll` | **Do not delete.** Without it GitHub Pages runs Jekyll, which converts the `.md` files to HTML and breaks the download links. |
 

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Probability Square — LPS 31</title>
+
+<!--
+  PROBABILITY SQUARE — LPS 31 / PHIL 31, Probability and Inductive Logic
+  Kenny Easwaran, UC Irvine · k.easwaran@uci.edu
+  Served from https://kennyeaswaran.github.io/lps31/
+
+  WHAT THIS IS
+  A drill for the week 5 / week 6 problems where you are given a few probabilities and
+  asked for another one — or asked to recognise that there is not enough information.
+  It works the way the 2x2 rectangle works on paper: label the columns and rows with the
+  atomic sentences and their negations, ring the region a given probability refers to,
+  write the number on it, and keep ringing regions until the target is one of them.
+
+  HOW IT DECIDES WHAT IS CORRECT
+  The four cells are unknowns x0..x3 with x0+x1+x2+x3 = 1. Each given adds one linear
+  equation (the cells in that region sum to the stated value). A region's probability is
+  DETERMINED exactly when its indicator vector is orthogonal to the null space of that
+  system — i.e. when its value is the same for every distribution consistent with the
+  givens. This is computed exactly, in rational arithmetic, by rref(). So the program
+  never has to be told the answer to a problem: it derives what does and does not follow.
+
+  That is also what makes "not enough information" a first-class answer here rather than a
+  special case. When a student claims a value for a region that is not determined, the
+  program does not merely say no — it produces TWO complete distributions, both consistent
+  with everything given, that disagree about that region. That is the argument form the
+  study guide recommends for teaching this, and it is the whole reason the tool computes
+  with the constraint system instead of a stored answer key.
+
+  DESIGN NOTES
+  · Labelling the axes comes first and is checked: the columns must carry one atom and its
+    negation, the rows the other. Either atom may go on either axis, in either order.
+  · The givens must be transcribed before any derived region can be added. Selecting the
+    right region for "Pr(a ∨ b) = .6" is itself the translation step being practised.
+  · A region may be labelled with a proposition, a probability, or both. A proposition is
+    checked by evaluating it over the four cells and comparing truth sets, so it catches
+    the student who rings the wrong region for a correct-looking sentence.
+  · Regions are drawn as outlines traced round the union of their cells (see outline()),
+    scaled slightly about each loop's centroid so that nested regions stay legible — the
+    same way overlapping loops look when drawn by hand.
+  · Numbers are placed by the conventions used on paper, in labelPos(): a single cell takes
+    its number in the middle; a row takes it outside to the right; a column takes it outside
+    below; a three-cell region takes it diagonally outside the corner of the middle one of
+    the three, with a short leader line. The middle of an L of three cells is always the one
+    diagonally opposite the missing cell, which with this indexing is just 3 − i.
+  · Only unconditional probabilities. Conditional probability is not a region of the
+    square, so week 6 onwards is out of scope for this tool.
+
+  NOTATION
+  Connectives are & ∨ ∼; input also accepts ~ for ∼ and v for ∨ in operator position.
+  Atomic sentences are lower-case. Values may be typed as decimals or fractions (.3, 3/10).
+
+  MAINTENANCE
+  Everything between the //---LOGIC--- markers is pure and DOM-free: the fraction
+  arithmetic, the parser, rref(), determined() and witnesses(). Test those directly if you
+  change them. This file is checked headlessly with jsdom against every worked example in
+  Appendix A of LPS31-AI-study-guide.md, including the ones whose answer is that there is
+  not enough information.
+-->
+
+<style>
+body{font:16px/1.55 system-ui,-apple-system,sans-serif;max-width:56rem;margin:2rem auto;padding:0 1rem;color:#1a1a1a}
+h2{margin:0 0 .1rem}.sub{color:#666;margin:0 0 1.2rem}
+select,button,input{font:inherit}
+select{padding:.25rem}
+button{margin:.15rem .15rem .15rem 0;padding:.35rem .75rem}
+button.sel{background:#1a5fb4;color:#fff;border-color:#1a5fb4}
+input[type=text]{padding:.25rem .35rem;font-family:ui-monospace,SFMono-Regular,monospace}
+.wrap{display:flex;gap:1.6rem;flex-wrap:wrap;align-items:flex-start}
+#sq{flex:0 0 auto}
+#side{flex:1 1 18rem;min-width:16rem}
+.q{background:#f4f7fa;border:1px solid #d4e0ea;border-radius:7px;padding:.7rem .9rem;margin:.8rem 0}
+.q b{font-family:ui-monospace,monospace}
+.given{font-family:ui-monospace,monospace;margin:.15rem 0}
+.given.done{color:#3f8f33}
+.given.done:before{content:"✓ ";font-family:system-ui}
+.given:not(.done):before{content:"○ ";color:#999}
+#msg{margin:.7rem 0;padding:.55rem .7rem;border-left:3px solid #888;background:#f7f7f7;white-space:pre-wrap}
+#msg.err{border-left:3px solid #c0392b;background:#fdeceb;color:#8b2018;font-weight:600;animation:flash .55s}
+#msg.win{border-left:3px solid #3f8f33;background:#e8f6e3;font-size:1.06em;font-weight:600}
+@keyframes flash{0%,100%{background:#fdeceb}35%{background:#f7c2bb}}
+table.wit{border-collapse:collapse;margin:.5rem 0;font-family:ui-monospace,monospace;font-size:.9em}
+.wit th,.wit td{border:1px solid #c8c8c8;padding:.15rem .5rem;text-align:center}
+.wit th{background:#f0f0f0}
+.facts{margin:.6rem 0;font-size:.93rem}
+.fact{display:flex;align-items:center;gap:.45rem;margin:.2rem 0}
+.chip{width:.9rem;height:.9rem;border-radius:3px;flex:0 0 auto}
+.fact code{font-size:.95em}
+.fact .rm{margin-left:auto;font-size:.8em;color:#a00;cursor:pointer;background:none;border:0;padding:0}
+.lab{font-size:.9rem;margin:.3rem 0}
+.lab input{width:3.4rem;text-align:center}
+.hint{font-size:.86em;color:#666}
+cell{}
+</style>
+
+<h2>Probability Square</h2>
+<p class=sub>LPS 31 / PHIL 31 · Probability and Inductive Logic</p>
+
+<p><label><b>Problem</b><br><select id=prob onchange=start()></select></label>
+  <button onclick=start()>Restart</button></p>
+
+<div class=q id=question></div>
+
+<div class=wrap>
+  <div id=sq></div>
+  <div id=side>
+    <div id=stage></div>
+    <div id=facts class=facts></div>
+  </div>
+</div>
+
+<div id=msg></div>
+<div id=extra></div>
+
+<script>
+//---LOGIC--- (pure; no DOM)
+// ---- exact rational arithmetic ----
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a||1;}
+function fr(n,d){if(d===undefined)d=1;if(d<0){n=-n;d=-d;}const g=gcd(n,d);return{n:n/g,d:d/g};}
+const fadd=(x,y)=>fr(x.n*y.d+y.n*x.d,x.d*y.d), fsub=(x,y)=>fr(x.n*y.d-y.n*x.d,x.d*y.d);
+const fmul=(x,y)=>fr(x.n*y.n,x.d*y.d), fdiv=(x,y)=>fr(x.n*y.d,x.d*y.n);
+const fz=x=>x.n===0, feq=(x,y)=>x.n*y.d===y.n*x.d, fnum=x=>x.n/x.d;
+function fstr(x){if(x.d===1)return String(x.n);
+  const dec=x.n/x.d, r=Math.round(dec*10000)/10000;
+  if(Number.isInteger(r*100)&&x.d<=100&&1000%x.d===0||[2,4,5,8,10,20,25,40,50,100].includes(x.d))
+    return String(dec).replace(/^0\./,'.').replace(/^-0\./,'-.');
+  return x.n+'/'+x.d;}
+function parseNum(s){s=String(s).trim();
+  if(!s)return null;
+  let m=s.match(/^(-?\d+)\s*\/\s*(\d+)$/); if(m)return fr(+m[1],+m[2]);
+  if(!/^-?(\d+\.?\d*|\.\d+)$/.test(s))return null;
+  const neg=s[0]==='-'; if(neg)s=s.slice(1);
+  const dot=s.indexOf('.');
+  let v; if(dot<0)v=fr(+s); else{const dec=s.length-dot-1; v=fr(+(s.replace('.','')||0),Math.pow(10,dec));}
+  return neg?fr(-v.n,v.d):v;}
+
+// ---- sentence parsing (same conventions as the truth table trainer) ----
+const NOT='∼',AND='&',OR='∨';
+function norm(s){s=s.replace(/[~!¬]/g,NOT).replace(/[|]/g,OR).replace(/[\^∧]/g,AND);
+  let o='',prev='';
+  for(let i=0;i<s.length;i++){let ch=s[i];
+    if(ch==='v'){let j=i+1;while(s[j]===' ')j++;const nx=s[j]||'';
+      if((prev===')'||/[A-Za-z]/.test(prev))&&(nx==='('||nx===NOT||/[A-Za-z]/.test(nx)))ch=OR;}
+    o+=ch;if(ch!==' ')prev=ch;}
+  return o;}
+function lex(s){const o=[];for(const ch of norm(s)){if(ch===' ')continue;
+  const k=ch===NOT?'not':ch===AND?'and':ch===OR?'or':ch==='('?'lp':ch===')'?'rp':/[A-Za-z]/.test(ch)?'atom':null;
+  if(!k)throw Error('Unexpected character: '+ch);o.push({k,ch});}
+  if(!o.length)throw Error('Empty');return o;}
+function parse(ts){let i=0;const pk=()=>ts[i];
+  function prim(){const t=ts[i];if(!t)throw Error('Ends early');
+    if(t.k==='not'){i++;return{k:'not',a:prim()};}
+    if(t.k==='lp'){i++;const e=orx();if(!ts[i]||ts[i].k!=='rp')throw Error('Missing )');i++;return e;}
+    if(t.k==='atom'){i++;return{k:'atom',ch:t.ch};}
+    throw Error('Unexpected '+t.ch);}
+  function andx(){let l=prim();while(pk()&&pk().k==='and'){i++;l={k:'and',a:l,b:prim()};}return l;}
+  function orx(){let l=andx();while(pk()&&pk().k==='or'){i++;l={k:'or',a:l,b:andx()};}return l;}
+  const e=orx();if(i!==ts.length)throw Error('Unexpected '+ts[i].ch);return e;}
+function ev(n,e){return n.k==='atom'?e[n.ch]:n.k==='not'?!ev(n.a,e):n.k==='and'?(ev(n.a,e)&&ev(n.b,e)):(ev(n.a,e)||ev(n.b,e));}
+function atomsOf(s){const o=[];for(const t of lex(s))if(t.k==='atom'&&!o.includes(t.ch))o.push(t.ch);return o;}
+// a literal is an atom or a negated atom: returns {atom, neg} or null
+function literal(s){try{const a=parse(lex(s));
+  if(a.k==='atom')return{atom:a.ch,neg:false};
+  if(a.k==='non')return null;
+  if(a.k==='not'&&a.a.k==='atom')return{atom:a.a.ch,neg:true};
+  return null;}catch(e){return null;}}
+
+// ---- the square ----
+// cells are indexed r*2+c ; cellEnv maps a cell to a truth assignment given the axis labels
+function cellEnv(cols,rows,i){const c=i%2,r=(i/2)|0,e={};
+  e[cols[c].atom]=!cols[c].neg; e[rows[r].atom]=!rows[r].neg; return e;}
+// the set of cells (as a bitmask) in which a proposition is true
+function regionOf(prop,cols,rows){const a=parse(lex(prop));let m=0;
+  for(let i=0;i<4;i++)if(ev(a,cellEnv(cols,rows,i)))m|=1<<i;return m;}
+const bits=m=>[0,1,2,3].filter(i=>m&(1<<i));
+
+// ---- exact linear algebra over the four cell probabilities ----
+// rows: [coeffs(4), rhs] with fraction entries. Returns {rref, pivots, free}
+function rref(M){
+  M=M.map(r=>r.slice()); const n=M[0].length-1; let piv=0; const pivots=[];
+  for(let col=0;col<n&&piv<M.length;col++){
+    let sel=-1; for(let r=piv;r<M.length;r++)if(!fz(M[r][col])){sel=r;break;}
+    if(sel<0)continue;
+    [M[piv],M[sel]]=[M[sel],M[piv]];
+    const p=M[piv][col];
+    for(let j=0;j<=n;j++)M[piv][j]=fdiv(M[piv][j],p);
+    for(let r=0;r<M.length;r++){if(r===piv)continue;const f=M[r][col];
+      if(fz(f))continue;
+      for(let j=0;j<=n;j++)M[r][j]=fsub(M[r][j],fmul(f,M[piv][j]));}
+    pivots.push(col); piv++;
+  }
+  const free=[]; for(let c=0;c<n;c++)if(!pivots.includes(c))free.push(c);
+  return{M,pivots,free};
+}
+function system(givens){ // givens: [{mask, val}] ; always includes the whole square = 1
+  const rows=[[fr(1),fr(1),fr(1),fr(1),fr(1)]];
+  givens.forEach(g=>rows.push([0,1,2,3].map(i=>g.mask&(1<<i)?fr(1):fr(0)).concat([g.val])));
+  return rref(rows);
+}
+function nullBasis(R){ // basis of the solution set's direction space
+  const out=[];
+  R.free.forEach(f=>{const v=[fr(0),fr(0),fr(0),fr(0)];v[f]=fr(1);
+    R.pivots.forEach((p,i)=>{v[p]=fsub(fr(0),R.M[i][f]);});
+    out.push(v);});
+  return out;}
+function particular(R){ // one solution (free vars = 0); may be outside [0,1]
+  const x=[fr(0),fr(0),fr(0),fr(0)];
+  R.pivots.forEach((p,i)=>{x[p]=R.M[i][4];});
+  return x;}
+function consistent(R){ // an all-zero coefficient row with non-zero rhs means no solution
+  return !R.M.some(r=>r.slice(0,4).every(fz)&&!fz(r[4]));}
+const dot=(r,x)=>[0,1,2,3].reduce((s,i)=>r&(1<<i)?fadd(s,x[i]):s,fr(0));
+function determined(R,mask){ // is this region's probability the same in every solution?
+  return nullBasis(R).every(v=>fz([0,1,2,3].reduce((s,i)=>mask&(1<<i)?fadd(s,v[i]):s,fr(0))));}
+function valueOf(R,mask){return dot(mask,particular(R));}
+// The two extreme distributions consistent with the givens: the ones giving `mask` its
+// smallest and largest possible value. Those endpoints are the most useful pair to show a
+// student, since together they give the whole range the quantity could take.
+// NOTE this is a search over a rational grid, used only for DISPLAY. Whether a region is
+// determined at all is decided exactly, by determined(), and does not depend on this.
+function witnesses(R,mask){
+  const F=R.free, step=60, found=[];
+  if(F.length===0||F.length>2)return null;
+  const scan=(vals)=>{
+    if(vals.length===F.length){
+      const x=[fr(0),fr(0),fr(0),fr(0)];
+      F.forEach((f,i)=>x[f]=vals[i]);
+      R.pivots.forEach((p,i)=>{let s=R.M[i][4];
+        F.forEach((f,k)=>{s=fsub(s,fmul(R.M[i][f],vals[k]));});x[p]=s;});
+      if(x.every(v=>v.n>=0&&fnum(v)<=1))found.push(x);
+      return;}
+    for(let k=0;k<=step;k++){vals.push(fr(k,step));scan(vals);vals.pop();}};
+  scan([]);
+  if(found.length<2)return null;
+  let lo=found[0],hi=found[0];
+  found.forEach(x=>{const v=fnum(dot(mask,x));
+    if(v<fnum(dot(mask,lo)))lo=x; if(v>fnum(dot(mask,hi)))hi=x;});
+  return feq(dot(mask,lo),dot(mask,hi))?null:[lo,hi];
+}
+//---/LOGIC---
+
+const PROBS=[
+ {n:"Pr(b)=.3, Pr(a ∨ b)=.6  →  Pr(a & ∼b)",g:[["b",".3"],["a ∨ b",".6"]],t:"a & ∼b"},
+ {n:"Week 5 — Pr(b)=.3, Pr(b ∨ h)=.5  →  Pr(h & ∼b)",g:[["b",".3"],["b ∨ h",".5"]],t:"h & ∼b"},
+ {n:"Week 5 — Pr(u)=.3, Pr(∼i)=.4  →  Pr(u & ∼i)",g:[["u",".3"],["∼i",".4"]],t:"u & ∼i"},
+ {n:"Week 5 — three conjunctions given  →  Pr(f ∨ u)",g:[["f & ∼u",".2"],["∼f & u",".5"],["f & u",".1"]],t:"f ∨ u"},
+ {n:"Midterm 2 — Pr(t)=.6, Pr(t ∨ n)=.8  →  Pr(t & n)",g:[["t",".6"],["t ∨ n",".8"]],t:"t & n"},
+ {n:"Midterm 2 — Pr(d)=.5, Pr(c ∨ d)=.7  →  Pr(c)",g:[["d",".5"],["c ∨ d",".7"]],t:"c"},
+ {n:"Midterm 2 — Pr(s)=.5, Pr(l)=.4, Pr(∼s & l)=.2  →  Pr(s ∨ l)",g:[["s",".5"],["l",".4"],["∼s & l",".2"]],t:"s ∨ l"},
+ {n:"Midterm 2 — Pr(b)=.6, Pr(∼b ∨ y)=.5  →  Pr(b & y)",g:[["b",".6"],["∼b ∨ y",".5"]],t:"b & y"},
+ {n:"Final — Pr(x)=.3, Pr(x ∨ y)=.7  →  Pr(y & ∼x)",g:[["x",".3"],["x ∨ y",".7"]],t:"y & ∼x"},
+ {n:"Final — Pr(∼d)=.4, Pr(d ∨ e)=.8  →  Pr(e & ∼d)",g:[["∼d",".4"],["d ∨ e",".8"]],t:"e & ∼d"},
+ {n:"Final — Pr(h)=.4, Pr(l)=.3, Pr(h ∨ l)=.6  →  Pr(h & l)",g:[["h",".4"],["l",".3"],["h ∨ l",".6"]],t:"h & l"},
+ {n:"Final — Pr(n & q)=.25, Pr(n)=.5, Pr(q)=.5  →  Pr(n ∨ q)",g:[["n & q",".25"],["n",".5"],["q",".5"]],t:"n ∨ q"},
+ {n:"Final — Pr(u)=.4, Pr(w)=.6, Pr(u ∨ ∼w)=.7  →  Pr(u & w)",g:[["u",".4"],["w",".6"],["u ∨ ∼w",".7"]],t:"u & w"}];
+const COLORS=['#1a5fb4','#c9539b','#2f8f4e','#c4761a','#7b4fb8','#0d8d94'];
+const S=104, PADL=66, PADT=52, PADR=70, PADB=56;
+
+// Where the number for a region is written, following the conventions used on paper:
+//   one cell   → in the middle of that cell
+//   a row      → outside the square, to the right of that row
+//   a column   → outside the square, below that column
+//   three cells→ diagonally outside the corner of the middle one of the three. The middle
+//                cell is the corner of the L, which is always the cell diagonally opposite
+//                the missing one — and cell indices are arranged so that is simply 3 − i.
+//   otherwise  → the two diagonal cells have no outside corner of their own, so the number
+//                goes in the centre; the whole square goes outside the bottom-right corner.
+function labelPos(mask){
+  const cs=bits(mask), cx=c=>PADL+c*S+S/2, cy=r=>PADT+r*S+S/2;
+  const corner=(c,r)=>({cornerX:PADL+(c?2*S:0),cornerY:PADT+(r?2*S:0)});
+  if(cs.length===1){const c=cs[0]%2,r=(cs[0]/2)|0;return{x:cx(c),y:cy(r)+7,anchor:'middle'};}
+  if(cs.length===2){
+    const [r0,r1]=cs.map(i=>(i/2)|0), [c0,c1]=cs.map(i=>i%2);
+    if(r0===r1)return{x:PADL+2*S+14,y:cy(r0)+7,anchor:'start'};
+    if(c0===c1)return{x:cx(c0),y:PADT+2*S+28,anchor:'middle'};
+    return{x:PADL+S,y:PADT+S+7,anchor:'middle'};}
+  if(cs.length===3){
+    const mid=3-[0,1,2,3].find(i=>!(mask&(1<<i))), c=mid%2, r=(mid/2)|0;
+    const{cornerX,cornerY}=corner(c,r);
+    return{x:cornerX+(c?26:-26), y:cornerY+(r?30:-14), anchor:c?'start':'end',
+           leader:[cornerX+(c?4:-4), cornerY+(r?8:-6), cornerX+(c?20:-20), cornerY+(r?22:-20)]};}
+  const{cornerX,cornerY}=corner(1,1);
+  return{x:cornerX+26,y:cornerY+30,anchor:'start'};
+}
+
+let S_={};
+const $=id=>document.getElementById(id);
+const msg=(t,k)=>{const m=$('msg');m.className='';void m.offsetWidth;m.className=k||'';m.textContent=t;$('extra').innerHTML='';};
+
+function init(){
+  $('prob').innerHTML=PROBS.map((p,i)=>`<option value=${i}>${p.n}</option>`).join('');
+  start();}
+function start(){
+  const P=PROBS[+$('prob').value];
+  const atoms=[]; [...P.g.map(x=>x[0]),P.t].forEach(s=>atomsOf(s).forEach(a=>{if(!atoms.includes(a))atoms.push(a);}));
+  S_={P,atoms,cols:null,rows:null,facts:[],sel:0,stage:'label',target:P.t};
+  $('question').innerHTML='<b>Given:</b> '+P.g.map(([p,v])=>`Pr(${p}) = ${v}`).join(' &nbsp;·&nbsp; ')
+    +`<br><b>Find:</b> Pr(${P.t}) &nbsp;<span class=hint>— or decide there is not enough information</span>`;
+  $('extra').innerHTML='';
+  askLabels();
+}
+function askLabels(){
+  S_.stage='label';
+  $('stage').innerHTML=`<b>Step 1.</b> Label the square. The two atomic sentences are
+    <code>${S_.atoms.join('</code> and <code>')}</code>; each axis takes one of them and its negation.
+    <div class=lab>columns: <input type=text id=c0> <input type=text id=c1></div>
+    <div class=lab>rows: &nbsp;&nbsp;&nbsp;<input type=text id=r0> <input type=text id=r1></div>
+    <button onclick=chkLabels()>Check</button>
+    <div class=hint>Write <code>∼</code> as <code>~</code> if that is easier.</div>`;
+  $('facts').innerHTML='';
+  draw();
+  msg('Step 1: which sentence goes across the top, and which down the side? Either order is fine.');
+}
+function chkLabels(){
+  const v=id=>$(id).value.trim();
+  const L=['c0','c1','r0','r1'].map(id=>literal(v(id)));
+  if(L.some(x=>!x))return msg('Each label must be an atomic sentence or its negation — like a or ∼a.','err');
+  const [c0,c1,r0,r1]=L;
+  if(c0.atom!==c1.atom)return msg('The two columns must be the same sentence and its negation.','err');
+  if(r0.atom!==r1.atom)return msg('The two rows must be the same sentence and its negation.','err');
+  if(c0.neg===c1.neg)return msg('One column should be the sentence and the other its negation.','err');
+  if(r0.neg===r1.neg)return msg('One row should be the sentence and the other its negation.','err');
+  if(c0.atom===r0.atom)return msg('The columns and the rows must use different atomic sentences.','err');
+  if(!S_.atoms.includes(c0.atom)||!S_.atoms.includes(r0.atom))
+    return msg(`This problem is about ${S_.atoms.join(' and ')}.`,'err');
+  S_.cols=[c0,c1];S_.rows=[r0,r1];
+  S_.given=S_.P.g.map(([p,val])=>({prop:p,mask:regionOf(p,S_.cols,S_.rows),val:parseNum(val),txt:val,in:false}));
+  S_.sys=system(S_.given.map(g=>({mask:g.mask,val:g.val})));
+  S_.targetMask=regionOf(S_.target,S_.cols,S_.rows);
+  S_.stage='givens';S_.sel=0;
+  work();
+  msg('Labelled. Now copy in what you were given: click the cells a given probability covers, then write the number.');
+}
+function work(){
+  const left=S_.given.filter(g=>!g.in).length;
+  S_.stage=left?'givens':'derive';
+  $('stage').innerHTML=(left
+    ?`<b>Step 2.</b> Copy in the given probabilities — ${left} still to go.`
+    :`<b>Step 3.</b> Ring more regions and work out their probabilities, until you can answer.`)
+    +`<div class=given-list>`+S_.given.map(g=>
+      `<div class="given${g.in?' done':''}">Pr(${g.prop}) = ${g.txt}</div>`).join('')+`</div>`
+    +`<div class=lab style="margin-top:.6rem">
+        proposition <input type=text id=fprop placeholder="optional" size=10>
+        probability <input type=text id=fval size=5>
+        <button onclick=addFact()>Label region</button></div>
+      <div class=hint>Click cells in the square to select a region (click again to unselect).</div>`
+    +(left?'':`<div style="margin-top:.7rem"><button onclick=notEnough()>There is not enough information</button></div>`);
+  draw();renderFacts();
+}
+function draw(){
+  const W=PADL+2*S+PADR, H=PADT+2*S+PADB;
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="${Math.min(W,460)}" style="max-width:100%">`;
+  if(S_.cols){
+    s+=`<text x="${PADL+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[0])}</text>`
+      +`<text x="${PADL+S+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[1])}</text>`
+      +`<text x="${PADL-14}" y="${PADT+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${lit(S_.rows[0])}</text>`
+      +`<text x="${PADL-14}" y="${PADT+S+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${lit(S_.rows[1])}</text>`;
+  }
+  for(let i=0;i<4;i++){const c=i%2,r=(i/2)|0;
+    const on=S_.sel&(1<<i);
+    s+=`<rect x="${PADL+c*S}" y="${PADT+r*S}" width="${S}" height="${S}" fill="${on?'#fff3c4':'#fff'}"
+        stroke="#333" stroke-width="2" ${S_.cols?`style="cursor:pointer" onclick="tog(${i})"`:''}/>`;}
+  // region outlines, drawn inside-out so later ones sit outside earlier ones
+  S_.facts.forEach((f,k)=>{
+    const col=COLORS[k%COLORS.length];
+    outline(f.mask).forEach(loop=>{
+      const cx=loop.reduce((a,p)=>a+p[0],0)/loop.length, cy=loop.reduce((a,p)=>a+p[1],0)/loop.length;
+      const t=1-0.055-0.045*k;
+      const pts=loop.map(p=>[cx+(p[0]-cx)*t,cy+(p[1]-cy)*t].map(z=>z.toFixed(1)).join(',')).join(' ');
+      s+=`<polygon points="${pts}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round"/>`;});
+  });
+  // the number for each region, placed by the conventions in labelPos()
+  const seen={};
+  S_.facts.forEach((f,k)=>{
+    if(!f.val)return;
+    const p=labelPos(f.mask), col=COLORS[k%COLORS.length];
+    const key=Math.round(p.x)+','+Math.round(p.y);
+    const dy=(seen[key]=(seen[key]||0)+1)-1;
+    if(p.leader&&!dy)s+=`<line x1="${p.leader[0]}" y1="${p.leader[1]}" x2="${p.leader[2]}" y2="${p.leader[3]}"
+        stroke="${col}" stroke-width="1.5"/>`;
+    s+=`<text x="${p.x}" y="${p.y+dy*20}" text-anchor="${p.anchor}"
+        font-family=ui-monospace font-size=17 fill="${col}" font-weight=600>${f.txt}</text>`;});
+  s+='</svg>';
+  $('sq').innerHTML=s;
+}
+const lit=l=>(l.neg?'∼':'')+l.atom;
+function outline(mask){
+  const inR=(c,r)=>c>=0&&c<2&&r>=0&&r<2&&(mask&(1<<(r*2+c)));
+  const E=[];
+  for(let r=0;r<2;r++)for(let c=0;c<2;c++){
+    if(!inR(c,r))continue;
+    const x0=PADL+c*S,y0=PADT+r*S,x1=x0+S,y1=y0+S;
+    if(!inR(c,r-1))E.push([[x0,y0],[x1,y0]]);
+    if(!inR(c+1,r))E.push([[x1,y0],[x1,y1]]);
+    if(!inR(c,r+1))E.push([[x1,y1],[x0,y1]]);
+    if(!inR(c-1,r))E.push([[x0,y1],[x0,y0]]);}
+  const used=E.map(()=>false), key=p=>p[0]+','+p[1], loops=[];
+  for(let i=0;i<E.length;i++){
+    if(used[i])continue; used[i]=true;
+    const loop=[E[i][0],E[i][1]]; let cur=E[i][1], go=true;
+    while(go){go=false;
+      for(let j=0;j<E.length;j++){
+        if(used[j]||key(E[j][0])!==key(cur))continue;
+        used[j]=true;cur=E[j][1];
+        if(key(cur)!==key(loop[0]))loop.push(cur);
+        go=true;break;}}
+    loops.push(loop);}
+  return loops;
+}
+function tog(i){if(!S_.cols||S_.stage==='done')return;S_.sel^=1<<i;draw();}
+function renderFacts(){
+  $('facts').innerHTML=S_.facts.length?'<b>On the square:</b>'+S_.facts.map((f,k)=>
+    `<div class=fact><span class=chip style="background:${COLORS[k%COLORS.length]}"></span>
+     <code>${f.prop?'Pr('+f.prop+') = ':''}${f.txt||'(region)'}</code>
+     <button class=rm onclick=rm(${k})>remove</button></div>`).join(''):'';
+}
+function rm(k){S_.facts.splice(k,1);
+  S_.given.forEach(g=>{g.in=S_.facts.some(f=>f.mask===g.mask&&f.val&&feq(f.val,g.val));});
+  work();msg('Removed.');}
+
+function addFact(){
+  const prop=$('fprop').value.trim(), raw=$('fval').value.trim();
+  if(!S_.sel)return msg('Select at least one cell first — click the cells the region covers.','err');
+  if(!prop&&!raw)return msg('Give the region a proposition, a probability, or both.','err');
+  let mask=S_.sel;
+  if(prop){
+    let pm; try{pm=regionOf(prop,S_.cols,S_.rows);}catch(e){return msg('Could not read that proposition: '+e.message,'err');}
+    const extra=atomsOf(prop).filter(a=>!S_.atoms.includes(a));
+    if(extra.length)return msg(`This square only has ${S_.atoms.join(' and ')}.`,'err');
+    if(pm!==mask)return msg(`Those cells are not where ${prop} is true.\n`
+      +(pm===0?'That sentence is a contradiction — it is true in none of the four cells.'
+       :pm===15?'That sentence is a tautology — it is true in all four cells.'
+       :`It is true in ${bits(pm).length} of the four cells; you selected ${bits(mask).length}.`),'err');}
+  let val=null;
+  if(raw){
+    val=parseNum(raw);
+    if(!val)return msg('Write the probability as a decimal or a fraction, like .3 or 3/10.','err');
+    if(val.n<0||fnum(val)>1)return msg('Every probability is between 0 and 1 (Rule 0).','err');
+    if(S_.stage==='givens'){
+      const g=S_.given.find(x=>x.mask===mask&&!x.in);
+      if(!g)return msg('That is not one of the given probabilities yet. Copy the givens in first — the list beside the square shows which are still missing.','err');
+      if(!feq(val,g.val))return msg(`That region is Pr(${g.prop}), which you were given as ${g.txt}.`,'err');
+    }else{
+      if(!determined(S_.sys,mask)){showWitnesses(mask,val);return;}
+      const want=valueOf(S_.sys,mask);
+      if(!feq(val,want))return msg('That region does have a determined probability, but that is not its value. Work it out from the regions you already have.','err');
+    }}
+  S_.facts.push({mask,prop,val,txt:val?fstr(val):''});
+  S_.given.forEach(g=>{if(g.mask===mask&&val&&feq(val,g.val))g.in=true;});
+  S_.sel=0;$('fprop').value='';$('fval').value='';
+  if(val&&mask===S_.targetMask&&determined(S_.sys,mask)&&feq(val,valueOf(S_.sys,S_.targetMask))){
+    S_.stage='done';draw();renderFacts();$('stage').innerHTML='<button onclick=start()>Run it again</button>';
+    return msg(`✓  Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}. That is the answer.`,'win');}
+  work();
+  msg(S_.given.every(g=>g.in)?'Added. Keep going until you can read off the target.':'Added.');
+}
+function notEnough(){
+  if(S_.stage!=='derive')return msg('Copy in the given probabilities first — until they are on the square there is nothing to judge.','err');
+  if(determined(S_.sys,S_.targetMask))
+    return msg(`Not so — Pr(${S_.target}) is fixed by what you were given. Keep working: ring the regions you can already put a number on, and see what that forces.`,'err');
+  S_.stage='done';draw();$('stage').innerHTML='<button onclick=start()>Run it again</button>';
+  const w=witnesses(S_.sys,S_.targetMask);
+  msg(`✓  Correct — there is not enough information to determine Pr(${S_.target}).`
+    +(w?`\n\nIt is still pinned down to a range: anything from ${fstr(dot(S_.targetMask,w[0]))} to ${fstr(dot(S_.targetMask,w[1]))} is possible.`:''),'win');
+  if(w)$('extra').innerHTML=witTable(w,'Both of these fit every probability you were given, and they sit at the two ends of that range:');
+}
+function showWitnesses(mask,claimed){
+  const w=witnesses(S_.sys,mask);
+  msg(`That region is not determined by what you were given, so it has no single value.`
+    +(w?` Given what you have it could be anything from ${fstr(dot(mask,w[0]))} to ${fstr(dot(mask,w[1]))}`
+        +(fnum(dot(mask,w[0]))<=fnum(claimed)&&fnum(claimed)<=fnum(dot(mask,w[1]))
+          ?`, so ${fstr(claimed)} is possible but not forced.`:`, so ${fstr(claimed)} is not even possible.`):''),'err');
+  if(w)$('extra').innerHTML=witTable(w,'Both of these fit every probability you were given, and they disagree about the region you ringed:');
+}
+function witTable(w,caption){
+  const nm=i=>{const c=i%2,r=(i/2)|0;return lit(S_.cols[c])+' & '+lit(S_.rows[r]);};
+  return `<p class=hint>${caption}</p><table class=wit><tr><th></th>`
+    +[0,1,2,3].map(i=>`<th>${nm(i)}</th>`).join('')+'</tr>'
+    +w.map((x,k)=>`<tr><th>${k?'or':'either'}</th>`+[0,1,2,3].map(i=>`<td>${fstr(x[i])}</td>`).join('')+'</tr>').join('')
+    +'</table>';
+}
+init();
+</script>
