@@ -3,12 +3,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Truth Table Trainer — LPS 31</title>
 <style>
-body{font:16px/1.55 system-ui,-apple-system,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#1a1a1a}
+body{font:16px/1.55 system-ui,-apple-system,sans-serif;max-width:62rem;margin:2rem auto;padding:0 1rem;color:#1a1a1a}
 h2{margin:0 0 .1rem}.sub{color:#666;margin:0 0 1.2rem}
-table{border-collapse:collapse;margin:1rem 0;font-family:ui-monospace,SFMono-Regular,monospace}
-th,td{border:1px solid #bbb;padding:1px;text-align:center;min-width:1.9em;height:1.9em}
-th{background:#f3f3f3;font-weight:600}
-th.lab{background:#e9e9e9;font-family:system-ui,sans-serif;font-size:.78rem;padding:2px 6px}
+table.tt{border-collapse:collapse;margin:1rem 0;font-family:ui-monospace,SFMono-Regular,monospace}
+.tt th,.tt td{border:1px solid #bbb;padding:1px;text-align:center;min-width:1.9em;height:1.9em}
+.tt th{background:#f3f3f3;font-weight:600}
+th.lab{background:#e9e9e9;font-family:system-ui,sans-serif;font-size:.78rem;padding:2px 6px;white-space:nowrap}
 .sep{border-left:2px solid #333}
 input.c{width:1.7em;height:1.7em;text-align:center;border:0;background:transparent;font:inherit;text-transform:uppercase}
 input.c:focus{background:#fff6b8;outline:2px solid #555}
@@ -17,16 +17,26 @@ th.avail{background:#d6ecd2}td.av{background:#eaf6e6}
 .pk{cursor:pointer}th.pk:hover{background:#b6dcae}td.pk:hover{background:#d3ebcb}
 th.act{background:#ffe9a8}th.done{background:#e4e4e4;color:#666}
 th.dep{background:#c3dbf5}td.dep{background:#e2eefb}
+th.main{background:#ffd9f0;box-shadow:inset 0 -3px #c9539b}td.mainc{background:#fdeef7}
 td.bad{background:#fbd5d5}
 tr.rowpick td{cursor:pointer}tr.rowpick:hover td{background:#f0e6ff}
-tr.marked td{background:#e8dcff}tr.marked:hover td{background:#dfcdff}
-tr.ce td{background:#ffd9b0;box-shadow:inset 0 0 0 1px #d98a2b}
-p.opt{font-size:.82em;color:#444;margin:.35rem 0}
-p.opt label{display:inline-block;margin-right:1.4em}
+tr.marked td{background:#e8dcff}tr.marked.rowpick:hover td{background:#dfcdff}
+tr.cesel td{background:#ffc98c;box-shadow:inset 0 0 0 1px #d98a2b}
+tr.cesel.rowpick:hover td{background:#ffbb6e}
+.key{font-size:.85em;color:#555;margin:.3rem 0}
+.sw{display:inline-block;width:.85em;height:.85em;vertical-align:-1px;border:1px solid #999;margin-right:.25em}
 select,button,textarea,input[type=text]{font:inherit}
 select{padding:.25rem}
+optgroup{color:#111;font-style:normal;font-weight:700}
+option{color:#1a1a1a;font-weight:400}
 textarea{width:100%;max-width:30rem;font-family:ui-monospace,monospace;font-size:.95rem;padding:.4rem;display:block;margin:.3rem 0}
 button{margin:.15rem .15rem .15rem 0;padding:.35rem .75rem}
+button.sel{background:#1a5fb4;color:#fff;border-color:#1a5fb4}
+fieldset{border:1px solid #d5d5d5;border-radius:6px;padding:.5rem .8rem .7rem;margin:1rem 0;max-width:34rem}
+legend{font-weight:600;font-size:.9rem;padding:0 .3rem}
+fieldset label{display:block;font-size:.88em;color:#333;margin:.12rem 0}
+fieldset label.exam{margin-top:.5rem;padding-top:.5rem;border-top:1px solid #e0e0e0;font-size:1em;font-weight:600;color:#8b2018}
+fieldset label.off{color:#999}
 #msg{margin:.7rem 0;padding:.55rem .7rem;border-left:3px solid #888;background:#f7f7f7;white-space:pre-wrap}
 #msg.err{border-left:3px solid #c0392b;background:#fdeceb;color:#8b2018;font-weight:600;animation:flash .55s}
 #msg.win{border-left:3px solid #3f8f33;background:#e8f6e3;font-size:1.08em;font-weight:600}
@@ -34,10 +44,11 @@ button{margin:.15rem .15rem .15rem 0;padding:.35rem .75rem}
 table.win th,table.win td{background:#bfe8b4;border-color:#5f9e57;transition:background .4s}
 table.win{animation:pop .5s ease-out}
 @keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.04)}100%{transform:scale(1)}}
-#final{margin:.8rem 0}
-#final .q{margin:.35rem 0}
-#final select{margin-left:.4rem}
+#final{margin:.8rem 0}#final .q{margin:.35rem 0}#final select{margin-left:.4rem}
+.defn{background:#f2f6fb;border-left:3px solid #7aa3d0;padding:.5rem .7rem;margin:.5rem 0;font-size:.93em}
 .hint{font-size:.85em;color:#666}
+.found{font-size:.9em;margin:.3rem 0}
+.found code{background:#eee;padding:0 .25em;border-radius:3px}
 </style>
 
 <h2>Truth Table Trainer</h2>
@@ -50,7 +61,7 @@ table.win{animation:pop .5s ease-out}
     <option value=cmp>Compare sentences — which are equivalent, which mutually exclusive</option>
     <option value=val>Test an argument — is it deductively valid?</option>
   </optgroup>
-  <optgroup label="Properties — presence/absence tables (P/A)">
+  <optgroup label="Properties — presence/absence tables (week 3 only)">
     <option value=Pcmp>Compare properties — which are equivalent, which mutually exclusive</option>
     <option value=Pcls>Classify each property — always, never, or sometimes present</option>
   </optgroup>
@@ -61,12 +72,16 @@ table.win{animation:pop .5s ease-out}
 <select id=preset onchange="if(this.value){$('sents').value=this.value;this.selectedIndex=0;start()}"></select>
 <button onclick=start()>Start</button></p>
 
-<p class=opt>
-<label><input type=checkbox id=hint checked onchange="if(S.sents)draw()"> highlight columns I can compute next</label>
-<label><input type=checkbox id=dep checked onchange="if(S.sents)draw()"> highlight the columns feeding the one I'm filling</label>
-</p>
+<fieldset><legend>Assistance</legend>
+<label><input type=checkbox id=autoCopy checked onchange=optChanged()> auto-copy atomic letters</label>
+<label><input type=checkbox id=hint checked onchange=optChanged()> highlight columns I can compute next</label>
+<label><input type=checkbox id=dep checked onchange=optChanged()> highlight the columns feeding the one I'm filling</label>
+<label><input type=checkbox id=autoMain checked onchange=optChanged()> auto-highlight main connective</label>
+<label><input type=checkbox id=defs checked onchange=optChanged()> definition reminders</label>
+<label class=exam><input type=checkbox id=exam onchange=examChanged()> Exam mode — no help, no checking until the end</label>
+</fieldset>
 
-<div id=msg>Pick a question type, type some sentences or choose a set from the course, and press Start.
+<div id=msg>Pick a question type, type some sentences or load a sample question, and press Start.
 Write connectives as &amp; · ∨ (or v) · ∼ (or ~). Parentheses as usual.</div>
 <div id=stage></div>
 <div id=grid></div>
@@ -101,130 +116,163 @@ function nodes(n,a=[]){if(n.k!=='atom'){nodes(n.a,a);if(n.b)nodes(n.b,a);}a.push
 function deps(n){return n.k==='atom'?[]:n.b?[n.a.col,n.b.col]:[n.a.col];}
 function atomsOf(s){const o=[];for(const t of lex(s))if(t.k==='atom'&&!o.includes(t.ch))o.push(t.ch);return o;}
 function mkRows(as){const n=as.length,o=[];for(let i=0;i<2**n;i++){const e={};as.forEach((a,k)=>e[a]=!((i>>(n-1-k))&1));o.push(e);}return o;}
-// relations between two completed columns, given the row set
-function relation(u,v){const eq=u.every((x,i)=>x===v[i]), me=!u.some((x,i)=>x&&v[i]);
+function relation(u,v){const eq=u.every((x,i)=>x===v[i]),me=!u.some((x,i)=>x&&v[i]);
   return eq?'equivalent':me?'exclusive':'neither';}
 function classify(col){return col.every(Boolean)?'taut':col.some(Boolean)?'cont':'contra';}
-// rows where every premise holds; a counterexample is such a row with a false conclusion
 function premRows(cols,nPrem){const out=[];for(let r=0;r<cols[0].length;r++){
-  let all=true;for(let i=0;i<nPrem;i++)if(!cols[i][r])all=false; if(all)out.push(r);}return out;}
+  let all=true;for(let i=0;i<nPrem;i++)if(!cols[i][r])all=false;if(all)out.push(r);}return out;}
 function counterexamples(cols,nPrem){return premRows(cols,nPrem).filter(r=>!cols[nPrem][r]);}
 //---/LOGIC---
 
 const PRE={
- cls:[["Week 2 — Homework 1, Problem 2","∼(a & ∼(a & b))\n∼(a & a) & b\n∼(a ∨ (b ∨ a))\na & ∼(a ∨ b)"],
-      ["Midterm 1 — Problem 1","m & ∼(m ∨ n)\n(m & ∼m) ∨ n\nm ∨ (∼m ∨ ∼n)\n(m & n) ∨ (∼m & n)"],
+ cls:[["Sample question like Homework 1, Problem 2","∼(a & ∼(a & b))\n∼(a & a) & b\n∼(a ∨ (b ∨ a))\na & ∼(a ∨ b)"],
+      ["Sample question like Midterm 1, Problem 1","m & ∼(m ∨ n)\n(m & ∼m) ∨ n\nm ∨ (∼m ∨ ∼n)\n(m & n) ∨ (∼m & n)"],
       ["A single sentence, to start","∼(a & ∼(a & b))"]],
- cmp:[["Week 2 — Homework 1, Problem 3","e ∨ ∼g\n∼(g & ∼e)\n∼e & g\n∼e ∨ ∼g"],
-      ["Midterm 1 — Problem 2 (3 letters, 8 rows)","∼e ∨ (f & ∼g)\n∼(e & (∼f ∨ g))\n(e ∨ f) & (e ∨ g)\n∼e & (∼f ∨ g)"],
+ cmp:[["Sample question like Homework 1, Problem 3","e ∨ ∼g\n∼(g & ∼e)\n∼e & g\n∼e ∨ ∼g"],
+      ["Sample question like Midterm 1, Problem 2 (8 rows)","∼e ∨ (f & ∼g)\n∼(e & (∼f ∨ g))\n(e ∨ f) & (e ∨ g)\n∼e & (∼f ∨ g)"],
       ["Just two sentences, to start","e ∨ ∼g\n∼(g & ∼e)"]],
- val:[["Week 2 — Homework 1, Problem 4","f ∨ g\n∼(f & k)\ng ∨ ∼k"],
-      ["Midterm 1 — Problem 3","p ∨ ∼q\n∼p & ∼(q & ∼p)\nq"],
-      ["Final — Problem 1","r & (s ∨ t)\nr & ∼s\nt"]],
- Pcmp:[["Week 3 — Homework 2, Problem 1","D ∨ ∼E\n∼D & E\n∼(D & E)\n∼D ∨ ∼E"]],
- Pcls:[["Week 3 — the same four properties","D ∨ ∼E\n∼D & E\n∼(D & E)\n∼D ∨ ∼E"]]};
+ val:[["Sample question like Homework 1, Problem 4","f ∨ g\n∼(f & k)\ng ∨ ∼k"],
+      ["Sample question like Midterm 1, Problem 3","p ∨ ∼q\n∼p & ∼(q & ∼p)\nq"],
+      ["Sample question like the Final, Problem 1","r & (s ∨ t)\nr & ∼s\nt"]],
+ Pcmp:[["Sample question like Homework 2, Problem 1","D ∨ ∼E\n∼D & E\n∼(D & E)\n∼D ∨ ∼E"]],
+ Pcls:[["Sample question — the same four properties","D ∨ ∼E\n∼D & E\n∼(D & E)\n∼D ∨ ∼E"]]};
 const LBL={cls:"<b>Sentences</b>, one per line",cmp:"<b>Sentences</b>, one per line",
  val:"<b>The argument</b> — one premise per line, <b>conclusion last</b>",
  Pcmp:"<b>Properties</b>, one per line (capital letters)",Pcls:"<b>Properties</b>, one per line (capital letters)"};
+const OPTS=['autoCopy','hint','dep','autoMain','defs'];
 
 let S={};
 const $=id=>document.getElementById(id);
+const on=id=>$(id).checked;
 const msg=(t,kind)=>{const m=$('msg');m.className='';void m.offsetWidth;m.className=kind||'';m.textContent=t;};
 const kind=()=>S.mode.replace('P','');
+const R=()=>S.rows?S.rows.length:S.nRows;
+function defn(html){return on('defs')?`<div class=defn>${html}</div>`:'';}
 
+function examChanged(){
+  const e=on('exam');
+  OPTS.forEach(o=>{const b=$(o);if(e){b.dataset.was=b.checked?'1':'';b.checked=false;}else if(b.dataset.was!==undefined)b.checked=b.dataset.was==='1';
+    b.disabled=e; b.parentNode.classList.toggle('off',e);});
+  if(S.sents)start();
+}
+function optChanged(){ if(S.sents&&(S.stage==='rows'||S.stage==='atoms'))start(); else if(S.sents)draw(); }
 function modeChanged(){
   const m=$('mode').value;
   $('lbl').innerHTML=LBL[m];
-  $('preset').innerHTML='<option value="">— or load a set from the course —</option>'
+  $('preset').innerHTML='<option value="">— load a sample assignment question —</option>'
     +PRE[m].map(([n,v])=>`<option value="${v.replace(/\n/g,'&#10;')}">${n}</option>`).join('');
-  $('sents').value=''; $('grid').innerHTML=''; $('stage').innerHTML=''; $('final').innerHTML='';
-  S={}; msg('Type some '+(m[0]==='P'?'properties':'sentences')+', or load a set from the course, and press Start.');
+  $('sents').value='';$('grid').innerHTML='';$('stage').innerHTML='';$('final').innerHTML='';
+  S={};msg('Type some '+(m[0]==='P'?'properties':'sentences')+', or load a sample question, and press Start.');
 }
 
 function start(){
-  const mode=$('mode').value, pa=mode[0]==='P', k=mode.replace('P','');
+  const mode=$('mode').value,pa=mode[0]==='P',k=mode.replace('P','');
   const src=$('sents').value.split('\n').map(x=>x.trim()).filter(Boolean);
   try{
-    if(!src.length) throw Error('Enter at least one '+(pa?'property':'sentence')+'.');
-    if(k==='val'&&src.length<2) throw Error('An argument needs at least one premise and a conclusion — put the conclusion on the last line.');
-    if(k==='cmp'&&src.length<2) throw Error('Comparing needs at least two.');
-    if(src.length>5) throw Error('Five at a time is plenty.');
-    const as=[]; src.forEach(s=>atomsOf(s).forEach(a=>{if(!as.includes(a))as.push(a);}));
-    if(as.length>4) throw Error(`That needs ${2**as.length} rows (${as.length} letters). Four letters is the sensible maximum here.`);
-    if(pa&&as.some(a=>a===a.toLowerCase())) throw Error('Properties are written with capital letters.');
-    if(!pa&&as.some(a=>a===a.toUpperCase())) throw Error('Sentences are written with lower-case letters.');
-    S={mode,pa,T:pa?'P':'T',F:pa?'A':'F',as,sents:[],cols:{},filled:new Set(),act:null,marked:new Set(),stage:'rows'};
+    if(!src.length)throw Error('Enter at least one '+(pa?'property':'sentence')+'.');
+    if(k==='val'&&src.length<2)throw Error('An argument needs at least one premise and a conclusion — put the conclusion on the last line.');
+    if(k==='cmp'&&src.length<2)throw Error('Comparing needs at least two.');
+    if(src.length>5)throw Error('Five at a time is plenty.');
+    const as=[];src.forEach(s=>atomsOf(s).forEach(a=>{if(!as.includes(a))as.push(a);}));
+    if(as.length>4)throw Error(`That needs ${2**as.length} rows (${as.length} letters). Four letters is the sensible maximum here.`);
+    if(pa&&as.some(a=>a===a.toLowerCase()))throw Error('Properties are written with capital letters.');
+    if(!pa&&as.some(a=>a===a.toUpperCase()))throw Error('Sentences are written with lower-case letters.');
+    S={mode,pa,exam:on('exam'),T:pa?'P':'T',F:pa?'A':'F',as,sents:[],cols:{},filled:new Set(),
+       act:null,marked:new Set(),sets:[],mains:new Set(),stage:'rows'};
     let base=0;
     src.forEach((s,i)=>{
-      const ts=lex(s), ast=parse(lex(s)), byCol={};
+      const ts=lex(s),ast=parse(lex(s)),byCol={};
       nodes(ast).forEach(n=>byCol[n.col]=n);
-      const label=k==='val'?(i<src.length-1?'Premise '+(i+1):'Conclusion')
-                 :src.length>1?'('+'abcde'[i]+')':'';
+      const label=k==='val'?(i<src.length-1?'Premise '+(i+1):'Conclusion'):src.length>1?'('+'abcde'[i]+')':'';
       S.sents.push({src:s,ts,ast,byCol,base,label});
       Object.keys(byCol).forEach(c=>S.cols[base+ +c]={node:byCol[c],si:i});
-      base+=ts.length;
-    });
-    S.rows=mkRows(as);
-    $('grid').innerHTML=''; $('final').innerHTML=''; askRows();
-  }catch(e){ msg(e.message,'err'); }
+      base+=ts.length;});
+    S.rows=null;S.nRows=2**as.length;
+    $('grid').innerHTML='';$('final').innerHTML='';askRows();
+  }catch(e){msg(e.message,'err');}
 }
 function askRows(){
-  $('stage').innerHTML=`<b>Step 1.</b> ${S.as.length} atomic ${S.pa?'propert':'sentence'}${S.as.length>1?(S.pa?'ies':'s'):(S.pa?'y':'')}
-    (${S.as.join(', ')}) across ${S.sents.length>1?'all of them':'it'}. How many rows does the table need?
-    <input type=text id=nr size=4> <button onclick=chkRows()>Check</button>`;
-  msg('Step 1 of 4: how many rows?');
+  const n=S.as.length;
+  $('stage').innerHTML=`<b>Step 1.</b> ${n} atomic ${S.pa?(n>1?'properties':'property'):(n>1?'sentences':'sentence')}
+    (${S.as.join(', ')})${S.sents.length>1?' across all of them':''}. How many rows does the table need?
+    <input type=text id=nr size=4> <button onclick=chkRows()>${S.exam?'Next step':'Check'}</button>`;
+  msg('Step 1: how many rows?');
 }
 function chkRows(){
-  if(+$('nr').value!==2**S.as.length)
+  const v=+$('nr').value;
+  if(S.exam){
+    if(!(v>0&&v<=16))return msg('Enter a number of rows between 1 and 16.','err');
+    S.nRows=v;S.rows=null;S.stage='free';$('stage').innerHTML='';draw();
+    return msg('Fill in the whole table — the columns under the atomic letters on the left, then every column of every sentence. Nothing is checked until you submit.');
+  }
+  if(v!==2**S.as.length)
     return msg(`Not quite — ${$('nr').value} isn't right. Each row is one combination of ${S.T} and ${S.F} across ${S.as.length} letter${S.as.length>1?'s':''}. How many combinations are there?`,'err');
-  S.stage='atoms'; $('stage').innerHTML=''; draw();
-  msg(`Step 2 of 4: fill the ${S.as.length} left-hand column${S.as.length>1?'s':''} so every combination appears exactly once.\nType ${S.T} or ${S.F}; the cursor moves down. Then press Check.`);
+  S.nRows=v;S.stage='atoms';$('stage').innerHTML='';draw();
+  msg(`Step 2: fill the ${S.as.length} left-hand column${S.as.length>1?'s':''} so every combination appears exactly once.\nType ${S.T} or ${S.F}; the cursor moves down. Then press Check.`);
 }
 
 // ---- table ----
 function clickable(g){return !!S.cols[g]&&!S.filled.has(g)&&S.stage==='pick';}
 function canDo(g){const{node,si}=S.cols[g],b=S.sents[si].base;
   return clickable(g)&&deps(node).every(d=>S.filled.has(b+d));}
-function depCols(){if(S.stage!=='fill'||S.act===null||!$('dep').checked)return[];
-  const{node,si}=S.cols[S.act],b=S.sents[si].base;return deps(node).map(d=>b+d);}
+function depCols(){
+  if(S.stage!=='fill'||S.act===null||!on('dep'))return[];
+  const{node,si}=S.cols[S.act],b=S.sents[si].base;
+  if(node.k==='atom')return['a'+S.as.indexOf(node.ch)];   // its source is the reference column
+  return deps(node).map(d=>b+d);}
+function mainCols(){return S.sents.map(s=>s.base+s.ast.col);}
+// which main-connective columns are shown in pink: all of them when the highlight is automatic,
+// otherwise the ones the student has picked out so far — same colour either way
+function mainSet(){
+  if(!['main','final','prem','verdict','ce','sel','examval','done'].includes(S.stage))return[];
+  return on('autoMain')?mainCols():[...S.mains];}
 function draw(){
-  const dep=depCols(), multi=S.sents.length>1;
+  const dep=depCols(),multi=S.sents.length>1,mset=mainSet();
   let lab='';
-  if(multi) lab=`<tr><th colspan=${S.as.length}></th>`
-    +S.sents.map(s=>`<th class="lab sep" colspan=${s.ts.length}>${s.label}</th>`).join('')+'</tr>';
+  if(multi)lab=`<tr><th colspan=${S.as.length}></th>`+S.sents.map((s,i)=>
+    `<th class="lab sep" colspan=${s.ts.length}>${S.stage==='sel'&&S.selKind?`<input type=checkbox id=sel${i} onchange=draw2()${S.selPick&&S.selPick.has(i)?' checked':''}> `:''}${s.label}</th>`).join('')+'</tr>';
   let hdr=S.as.map(a=>`<th>${a}</th>`).join('');
   S.sents.forEach(s=>s.ts.forEach(t=>{
-    const g=s.base+t.col, clk=clickable(g);
-    const cl=S.act===g?'act':dep.includes(g)?'dep':S.filled.has(g)?'done'
-            :(S.cols[g]&&canDo(g)&&$('hint').checked)?'avail pk':clk?'pk':'';
-    hdr+=`<th class="${cl}${t.col===0?' sep':''}" ${clk?`onclick=pick(${g})`:''}>${t.ch}</th>`;}));
+    const g=s.base+t.col,clk=clickable(g);
+    const cl=S.act===g?'act':dep.includes(g)?'dep':mset.includes(g)?'main'
+            :S.stage==='main'&&S.cols[g]?'pk':S.filled.has(g)?'done'
+            :(S.cols[g]&&canDo(g)&&on('hint'))?'avail pk':clk?'pk':'';
+    const click=S.stage==='main'&&S.cols[g]?`onclick=pickMain(${g})`:clk?`onclick=pick(${g})`:'';
+    hdr+=`<th class="${cl}${t.col===0?' sep':''}" ${click}>${t.ch}</th>`;}));
   let body='';
-  for(let r=0;r<S.rows.length;r++){
-    const rc=S.stage==='prem'||S.stage==='ce'?'rowpick ':'';
-    const mk=S.marked.has(r)?'marked ':'', ce=S.ceRow===r?'ce ':'';
-    body+=`<tr class="${rc}${mk}${ce}" ${rc?`onclick=rowClick(${r})`:''}>`
+  for(let r=0;r<R();r++){
+    // in the counterexample step only the already-marked rows are live
+    const rc=(S.stage==='prem'||S.stage==='examval'||(S.stage==='ce'&&S.marked.has(r)))?'rowpick ':'';
+    body+=`<tr class="${rc}${S.marked.has(r)?'marked ':''}${S.ceMarked&&S.ceMarked.has(r)?'cesel ':''}" ${rc?`onclick=rowClick(${r})`:''}>`
       +S.as.map((a,k)=>cell('a'+k,r)).join('')
-      +S.sents.map(s=>s.ts.map(t=>t.k==='lp'||t.k==='rp'
-          ?`<td${t.col===0?' class=sep':''}></td>`:cell(s.base+t.col,r,t.col===0)).join('')).join('')
-      +'</tr>';
-  }
-  $('grid').innerHTML=`<table class="${S.stage==='done'?'win':''}">${lab}<tr>${hdr}</tr>${body}</table>`+btns();
-  const f=document.querySelector('input.c:not([readonly])'); if(f)f.focus();
+      +S.sents.map(s=>s.ts.map(t=>t.k==='lp'||t.k==='rp'?`<td${t.col===0?' class=sep':''}></td>`
+          :cell(s.base+t.col,r,t.col===0,mset.includes(s.base+t.col))).join('')).join('')+'</tr>';}
+  $('grid').innerHTML=`<table class="tt ${S.stage==='done'?'win':''}">${lab}<tr>${hdr}</tr>${body}</table>`+btns();
+  const f=document.querySelector('input.c:not([readonly])');if(f)f.focus();
 }
-function cell(c,r,sep){
-  const key=c+'|'+r, v=S[key]||'', num=typeof c==='number';
-  const ro=num?S.act!==c:S.stage!=='atoms';
+function draw2(){ // remember checkbox state across a redraw
+  S.selPick=new Set();S.sents.forEach((s,i)=>{const b=$('sel'+i);if(b&&b.checked)S.selPick.add(i);});
+  $('final').innerHTML=selPanel();}
+function cell(c,r,sep,isMain){
+  const key=c+'|'+r,v=S[key]||'',num=typeof c==='number';
+  const ro=S.stage==='free'?false:num?S.act!==c:S.stage!=='atoms';
   const clk=num&&clickable(c);
-  const cl=(sep?'sep ':'')+(S['bad'+key]?'bad ':'')+(clk?'pk ':'')
-    +(depCols().includes(c)?'dep ':'')+(clk&&canDo(c)&&$('hint').checked?'av':'');
-  return `<td class="${cl.trim()}" ${clk?`onclick=pick(${c})`:''}><input class=c data-c="${c}" data-r="${r}" value="${v}" ${ro?'readonly':''} onkeydown="key(event)" oninput="typed(this)"></td>`;
+  const mainPick=num&&S.stage==='main'&&!!S.cols[c];   // any cell in the column selects it
+  const cl=(sep?'sep ':'')+(S['bad'+key]?'bad ':'')+(clk||mainPick?'pk ':'')+(isMain?'mainc ':'')
+    +(depCols().includes(c)?'dep ':'')+(clk&&canDo(c)&&on('hint')?'av':'');
+  const click=mainPick?`onclick=pickMain(${c})`:clk?`onclick=pick(${c})`:'';
+  return `<td class="${cl.trim()}" ${click}><input class=c data-c="${c}" data-r="${r}" value="${v}" ${ro?'readonly':''} onkeydown="key(event)" oninput="typed(this)"></td>`;
 }
 function btns(){
+  if(S.stage==='free')return '<button onclick=examNext()>Next step</button>';
   if(S.stage==='atoms')return '<button onclick=chkAtoms()>Check these columns</button>';
   if(S.stage==='fill')return '<button onclick=chkCol()>Check this column</button> <button onclick="S.act=null;S.stage=\'pick\';draw()">Pick a different column</button>';
   if(S.stage==='pick')return '<span class=hint>Click any cell in a column to compute that column next.</span>';
+  if(S.stage==='main')return '<span class=hint>Click anywhere in the column under the main connective of '+(S.sents[S.mainI].label||'the sentence')+'.</span>';
   if(S.stage==='prem')return '<button onclick=chkPrem()>Check these rows</button>';
-  if(S.stage==='ce')return '<span class=hint>Click the row that shows the argument is invalid.</span>';
+  if(S.stage==='ce')return '<button onclick=chkCE()>Check</button>'
+    +'<div class=key><span class=sw style="background:#e8dcff"></span>every premise true'
+    +' &nbsp; <span class=sw style="background:#ffc98c"></span>your counterexample</div>';
   return '';
 }
 function key(e){const i=e.target,c=i.dataset.c,r=+i.dataset.r;
@@ -237,133 +285,287 @@ function typed(i){const v=i.value.toUpperCase().slice(-1),c=i.dataset.c,r=+i.dat
   const n=document.querySelector(`input[data-c="${c}"][data-r="${r+1}"]`);if(n){n.focus();n.select();}}
 
 // ---- step 2: the rows ----
-// Any ordering is accepted so long as every combination appears exactly once; later
-// columns are then checked against the student's own row order.
+function readRows(){
+  const got=[];
+  for(let r=0;r<R();r++){const row=S.as.map((a,k)=>S['a'+k+'|'+r]||'');
+    if(row.some(x=>!x))return null;got.push(row.join(''));}
+  return got;}
 function chkAtoms(){
-  const N=2**S.as.length,got=[];
-  for(let r=0;r<N;r++){const row=S.as.map((a,k)=>S['a'+k+'|'+r]||'');
-    if(row.some(x=>!x))return msg('Fill in every cell in these columns first.','err');
-    got.push(row.join(''));}
+  const got=readRows();
+  if(!got)return msg('Fill in every cell in these columns first.','err');
   const first={},dup=new Set();
   got.forEach((s,r)=>{if(first[s]===undefined)first[s]=r;else{dup.add(r);dup.add(first[s]);}});
   if(dup.size){dup.forEach(r=>S.as.forEach((a,k)=>S['bada'+k+'|'+r]=1));draw();
-    return msg(`Some combinations appear more than once — the marked rows repeat each other, so the same number of combinations must be missing. With ${S.as.length} atomic letters there are exactly ${N}, each appearing once.\n\nA systematic order makes this impossible to get wrong: ${S.T} above ${S.F}, the leftmost column switching once halfway down, the next twice, each one after that twice as often.`,'err');}
+    return msg(`Some combinations appear more than once — the marked rows repeat each other, so the same number must be missing. With ${S.as.length} atomic letters there are exactly ${2**S.as.length}, each appearing once.\n\nA systematic order makes this impossible to get wrong: ${S.T} above ${S.F}, the leftmost column switching once halfway down, the next twice, each after that twice as often.`,'err');}
   S.rows=got.map(s=>{const e={};S.as.forEach((a,k)=>e[a]=s[k]===S.T);return e;});
-  const canon=mkRows(S.as).map(e=>S.as.map(a=>e[a]?S.T:S.F).join('')), std=canon.every((s,i)=>s===got[i]);
-  S.sents.forEach(s=>s.ts.forEach(t=>{if(t.k==='atom'){const g=s.base+t.col;S.filled.add(g);
-    S.rows.forEach((env,r)=>S[g+'|'+r]=env[t.ch]?S.T:S.F);}}));
-  // a sentence that is a bare atom has nothing to compute, so the table may already be done
-  if(S.sents.every(s=>S.filled.has(s.base+s.ast.col))){
-    S.stage=kind()==='val'?'prem':'final';draw();return kind()==='val'?askPrem():askFinal();}
+  const canon=mkRows(S.as).map(e=>S.as.map(a=>e[a]?S.T:S.F).join('')),std=canon.every((s,i)=>s===got[i]);
+  let note=std?'Rows are right, in the standard order.'
+    :`Accepted — all ${got.length} combinations are there exactly once, so the table is complete and correct. It is not the usual order, but nothing is wrong with that; ordering systematically just makes it harder to repeat or miss a combination. The rest of the table is checked against the order you used.`;
+  if(on('autoCopy')){
+    S.sents.forEach(s=>s.ts.forEach(t=>{if(t.k==='atom'){const g=s.base+t.col;S.filled.add(g);
+      S.rows.forEach((env,r)=>S[g+'|'+r]=env[t.ch]?S.T:S.F);}}));
+    note+='\n\nColumns under the atomic letters are copied across for you.';
+  }else note+='\n\nNow copy each atomic letter into its own columns yourself, then work outwards. Those columns come first.';
+  if(S.sents.every(s=>S.filled.has(s.base+s.ast.col)))return afterColumns();
   S.stage='pick';draw();
-  msg((std?'Rows are right, in the standard order.'
-    :`Accepted — all ${N} combinations are there exactly once, so the table is complete and correct. It is not the usual order, but nothing is wrong with that; ordering systematically just makes it harder to repeat or miss a combination. The rest of the table will be checked against the order you used.`)
-    +'\n\nColumns under the atomic letters are filled in for you.\n\nStep 3 of 4: which column can you compute next? A column can be computed only once the columns it is built from are done.'
-    +(S.sents.length>1?' You can work across '+(S.pa?'the properties':'the sentences')+' in any order.':''));
+  msg(note+'\n\nStep 3: which column can you compute next? A column can be computed only once the columns it is built from are done.'
+    +(S.sents.length>1?' You can work across the '+(S.pa?'properties':'sentences')+' in any order.':''));
 }
 
-// ---- step 3/4: the columns ----
+// ---- step 3: the columns ----
 function pick(g){
   if(!clickable(g))return;
   if(!canDo(g))return msg("Not yet — that column is built from a subsentence you haven't computed. Look for a connective whose parts are already filled in, and work outwards from there.",'err');
   S.act=g;S.stage='fill';draw();
-  const{node:n,si}=S.cols[g],s=S.sents[si],ns=nodes(n).map(x=>x.col);
-  const sub=s.ts.slice(Math.min(...ns),Math.max(...ns)+1).map(t=>t.ch).join('');
+  const{node:n,si}=S.cols[g],s=S.sents[si];
+  if(n.k==='atom')return msg(`Copying the atomic ${S.pa?'property':'sentence'} ${n.ch} into this column`+(s.label?` (${s.label})`:'')
+    +`.\n${on('dep')?'It comes straight from the blue reference column on the left. ':''}Type ${S.T}/${S.F} down the column, then Check.`);
+  const ns=nodes(n).map(x=>x.col),sub=s.ts.slice(Math.min(...ns),Math.max(...ns)+1).map(t=>t.ch).join('');
   const dp=deps(n),plural=dp.length>1?'s':'',atomic=dp.every(x=>s.byCol[x].k==='atom');
-  msg(`Computing the column under this ${n.k==='not'?NOT:n.k===AND?'&':OR} — the value of ${sub} in each row`
-    +(s.label?` (${s.label})`:'')+`.\n`
-    +($('dep').checked?`Work from the blue column${plural}${atomic?'':', not from the atomic letters'}. `:'')
+  msg(`Computing the column under this ${n.k==='not'?NOT:n.k===AND?'&':OR} — the value of ${sub} in each row`+(s.label?` (${s.label})`:'')+`.\n`
+    +(on('dep')?`Work from the blue column${plural}${atomic?'':', not from the atomic letters'}. `:'')
     +`Type ${S.T}/${S.F} down the column, then Check.`);
 }
 function chkCol(){
   const g=S.act,{node:n}=S.cols[g];let bad=0;
   S.rows.forEach((env,r)=>{if(S[g+'|'+r]!==(ev(n,env)?S.T:S.F)){bad++;S['bad'+g+'|'+r]=1;}});
-  if(bad){draw();return msg(`${bad} row${bad>1?'s':''} not right — marked. Check those rows against the columns this one is built from; don't recompute from the atomic letters.`,'err');}
+  if(bad){draw();return msg(`${bad} row${bad>1?'s':''} not right — marked. `
+    +(n.k==='atom'?'Copy the values straight down from the reference column on the left.'
+     :"Check those rows against the columns this one is built from; don't recompute from the atomic letters."),'err');}
   S.filled.add(g);S.act=null;
-  const done=S.sents.every(s=>S.filled.has(s.base+s.ast.col));
-  if(done){S.stage=kind()==='val'?'prem':'final';draw();return kind()==='val'?askPrem():askFinal();}
+  if(S.sents.every(s=>S.filled.has(s.base+s.ast.col)))return afterColumns();
   S.stage='pick';draw();
   const left=Object.keys(S.cols).filter(c=>!S.filled.has(+c)).length;
   msg(`Correct. ${left} column${left>1?'s':''} to go. Which one next?`);
 }
 
-// ---- final question ----
-function colOf(i){const s=S.sents[i];return S.rows.map((e,r)=>S[(s.base+s.ast.col)+'|'+r]===S.T);}
-function askFinal(){
-  const k=kind();
-  if(k==='cls'){
-    const opts=S.pa?[['taut','always present'],['contra','never present'],['cont','sometimes present']]
-                   :[['taut','tautology'],['contra','contradiction'],['cont','contingent']];
-    $('final').innerHTML='<b>Step 4.</b> Read each main-connective column:<br>'
-      +S.sents.map((s,i)=>`<div class=q><code>${s.src}</code>
-        <select id=f${i}><option value="">choose…</option>${opts.map(([v,t])=>`<option value=${v}>${t}</option>`).join('')}</select></div>`).join('')
-      +'<button onclick=chkFinal()>Check</button>';
-    msg('Step 4 of 4: each answer comes from one column — is it '+S.T+' in every row, '+S.F+' in every row, or a mix?');
-  }else{
-    const P=[];for(let i=0;i<S.sents.length;i++)for(let j=i+1;j<S.sents.length;j++)P.push([i,j]);
-    S.pairs=P;
-    $('final').innerHTML='<b>Step 4.</b> For each pair, compare the two main-connective columns:<br>'
-      +P.map(([i,j],n)=>`<div class=q>${S.sents[i].label||'('+(i+1)+')'} <code>${S.sents[i].src}</code>
-        &nbsp;vs&nbsp; ${S.sents[j].label||'('+(j+1)+')'} <code>${S.sents[j].src}</code>
-        <select id=p${n}><option value="">choose…</option><option value=equivalent>equivalent</option>
-        <option value=exclusive>mutually exclusive</option><option value=neither>neither</option></select></div>`).join('')
-      +'<button onclick=chkFinal()>Check</button>';
-    msg(`Step 4 of 4: equivalent means the same value in every row. Mutually exclusive means no row where both are ${S.T}. A pair can be neither — and cannot be both, unless both are ${S.F} everywhere.`);
-  }
+// ---- main-connective step ----
+function afterColumns(){
+  if(on('autoMain')||S.exam)return startFinal();
+  S.mainI=0;S.stage='main';draw();
+  msg(`The table is complete. Before reading anything off it: click the column under the main connective of ${S.sents[0].label||'the sentence'} — the one whose column gives the value of the whole ${S.pa?'property':'sentence'}.`);
 }
-function chkFinal(){
-  const k=kind();
-  if(k==='cls'){
-    const wrong=[];
-    S.sents.forEach((s,i)=>{const g=$('f'+i).value;
-      if(!g)return wrong.push(s.src+' (not answered)');
-      if(g!==classify(colOf(i)))wrong.push(s.src);});
-    if(wrong.length)return msg(`Not right for: ${wrong.join(', ')}.\nLook only at the column under the main connective of each.`,'err');
-  }else{
-    const wrong=[];
-    S.pairs.forEach(([i,j],n)=>{const g=$('p'+n).value;
-      if(!g)return wrong.push('a pair not answered');
-      if(g!==relation(colOf(i),colOf(j)))wrong.push(`${S.sents[i].label||i+1} vs ${S.sents[j].label||j+1}`);});
-    if(wrong.length)return msg(`Not right for: ${[...new Set(wrong)].join(', ')}.\nFor equivalence, look for any row where the two differ. For mutual exclusivity, look for any row where both are ${S.T}.`,'err');
-  }
-  finish(k==='cls'?'Every one classified correctly.':'Every pair identified correctly.');
+function pickMain(g){
+  const want=S.sents[S.mainI].base+S.sents[S.mainI].ast.col;
+  if(g!==want)return msg('That is the main connective of a part, not of the whole. The main connective is the last one you computed — the one every other column feeds into.','err');
+  S.mains.add(g);S.mainI++;
+  if(S.mainI>=S.sents.length){S.mains=new Set(mainCols());return startFinal();}
+  draw();msg(`Right. Now the main connective of ${S.sents[S.mainI].label||''}.`);
 }
 
-// ---- validity ----
-function askPrem(){
-  S.marked=new Set();S.stage='prem';draw();
-  msg('Step 4 of 5: click every row in which ALL the premises are true. Ignore the conclusion for now — that comes next.');
+// ---- final questions ----
+function colOf(i){const s=S.sents[i];return S.rows.map((e,r)=>S[(s.base+s.ast.col)+'|'+r]===S.T);}
+function startFinal(){
+  if(kind()==='val'){S.marked=new Set();S.stage='prem';draw();$('final').innerHTML='';
+    return msg('Step 4: '+(on('defs')
+      ?'click every row in which ALL the premises are true. Ignore the conclusion for now.'
+      :'mark the rows you need in order to decide whether this argument is valid.')
+      +(on('defs')?'':'')); }
+  S.stage=kind()==='cmp'?'sel':'final';draw();
+  return kind()==='cmp'?askCompare():askClassify();
 }
+// -- classify --
+function askClassify(){
+  const opts=S.pa?[['taut','always present'],['contra','never present'],['cont','sometimes present']]
+                 :[['taut','tautology'],['contra','contradiction'],['cont','contingent']];
+  $('final').innerHTML='<b>Step 4.</b> Read each main-connective column:<br>'
+    +defn(S.pa?`<b>Always present</b> — ${S.T} in every row. <b>Never present</b> — ${S.F} in every row. <b>Sometimes present</b> — ${S.T} in at least one row and ${S.F} in at least one row.`
+              :`A <b>tautology</b> is true in every row. A <b>contradiction</b> is false in every row. A sentence is <b>contingent</b> if it is true in at least one row and false in at least one row.`)
+    +S.sents.map((s,i)=>`<div class=q><code>${s.src}</code>
+      <select id=f${i}><option value="">choose…</option>${opts.map(([v,t])=>`<option value=${v}>${t}</option>`).join('')}</select></div>`).join('')
+    +`<button onclick=${S.exam?'examSubmit()':'chkClassify()'}>${S.exam?'Submit':'Check'}</button>`;
+  msg('Step 4: each answer comes from one column.');
+}
+function chkClassify(){
+  const wrong=[];
+  S.sents.forEach((s,i)=>{const g=$('f'+i).value;
+    if(!g)return wrong.push(s.src+' (not answered)');
+    if(g!==classify(colOf(i)))wrong.push(s.src);});
+  if(wrong.length)return msg(`Not right for: ${wrong.join(', ')}.\nLook only at the column under the main connective of each.`,'err');
+  finish('Every one classified correctly.');
+}
+// -- compare --
+function relOf(i,j){return relation(colOf(i),colOf(j));}
+function trueSets(){ // every pair that stands in each relation
+  const eq=[],ex=[];
+  for(let i=0;i<S.sents.length;i++)for(let j=i+1;j<S.sents.length;j++){
+    const r=relOf(i,j);if(r==='equivalent')eq.push(i+','+j);if(r==='exclusive')ex.push(i+','+j);}
+  return{eq,ex};}
+function covered(){ // pairs the student has claimed, via the sets submitted so far
+  const eq=new Set(),ex=new Set();
+  S.sets.forEach(({kind,ids})=>{for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++){
+    const key=Math.min(ids[a],ids[b])+','+Math.max(ids[a],ids[b]);
+    (kind==='equivalent'?eq:ex).add(key);}});
+  return{eq,ex};}
+function selPanel(){
+  const list=S.sets.length?'<div class=found><b>Recorded so far:</b><br>'+S.sets.map(({kind,ids})=>
+      `&nbsp;&nbsp;${kind==='equivalent'?'equivalent':'mutually exclusive'}: ${ids.map(i=>S.sents[i].label).join(' , ')}`).join('<br>')+'</div>':'';
+  const legend='<div class=hint>'+S.sents.map((s,i)=>`${s.label} <code>${s.src}</code>`).join(' &nbsp; ')+'</div>';
+  if(S.selKind){
+    const n=S.selPick?S.selPick.size:0;
+    return legend+list+`<p>Tick the ${S.pa?'properties':'sentences'} that are <b>${S.selKind==='equivalent'?'equivalent to each other':'mutually exclusive with each other'}</b> — the checkboxes are in the table heading.<br>
+      <button onclick=setDone()>Done with this set</button>
+      <button onclick="S.selKind=null;S.selPick=null;draw();$('final').innerHTML=selPanel()">Cancel</button>
+      <span class=hint>${n} ticked</span></p>`;}
+  return legend+list+`<p>Are any of the ${S.pa?'properties':'sentences'}
+    <button onclick="selStart('equivalent')">equivalent</button> or
+    <button onclick="selStart('exclusive')">mutually exclusive</button>, or are you
+    <button onclick=selFinish()>done selecting</button>?</p>`;
+}
+function askCompare(){
+  S.selKind=null;S.selPick=null;
+  $('final').innerHTML=defn(`Two ${S.pa?'properties are <b>equivalent</b>':'sentences are <b>equivalent</b>'} when their main columns match in every row, and <b>mutually exclusive</b> when there is no row in which both are ${S.T}. A pair can be neither.`)+selPanel();
+  msg('Step 4: identify every relation that holds. Compare the main-connective columns.');
+}
+function selStart(k){S.selKind=k;S.selPick=new Set();draw();$('final').innerHTML=selPanel();}
+function setDone(){
+  const ids=[...(S.selPick||[])].sort((a,b)=>a-b);
+  if(ids.length<2)return msg('Tick at least two — a relation holds between them.','err');
+  if(!S.exam){
+    for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++){
+      const r=relOf(ids[a],ids[b]);
+      if(r!==S.selKind)return msg(`${S.sents[ids[a]].label} and ${S.sents[ids[b]].label} are not ${S.selKind==='equivalent'?'equivalent':'mutually exclusive'}.\n`
+        +(S.selKind==='equivalent'?`Find a row where their main columns differ.`:`Find a row where both are ${S.T}.`),'err');}}
+  S.sets.push({kind:S.selKind,ids});S.selKind=null;S.selPick=null;draw();
+  $('final').innerHTML=selPanel();msg('Recorded. Anything else?');
+}
+function selFinish(){
+  if(S.exam)return examSubmit();
+  const t=trueSets(),c=covered();
+  const missEq=t.eq.filter(p=>!c.eq.has(p)),missEx=t.ex.filter(p=>!c.ex.has(p));
+  if(missEq.length||missEx.length)
+    return msg(`Not done yet — there ${missEq.length+missEx.length>1?'are':'is'} still `
+      +[missEq.length?`${missEq.length} equivalent pair${missEq.length>1?'s':''}`:'',
+        missEx.length?`${missEx.length} mutually exclusive pair${missEx.length>1?'s':''}`:''].filter(Boolean).join(' and ')
+      +` you haven't identified. Compare the main columns again.`,'err');
+  finish(S.sets.length?'Every relation identified, and nothing claimed that does not hold.'
+                      :'Correct — no two of them are equivalent, and no two are mutually exclusive.');
+}
+// -- validity --
 function rowClick(r){
-  if(S.stage==='prem'){S.marked.has(r)?S.marked.delete(r):S.marked.add(r);draw();
-    return msg(`${S.marked.size} row${S.marked.size===1?'':'s'} marked. Press Check when you have them all.`);}
-  if(S.stage==='ce'){
-    const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1;
-    if(!counterexamples(cols,n).includes(r))
-      return msg('That row does not show invalidity. You need a row where every premise is true AND the conclusion is false.','err');
-    S.ceRow=r;finish('That row is exactly the counterexample: all the premises true, the conclusion false. The argument is invalid.');}
+  if(S.stage==='ce'){                       // sub-selection: only from the rows already marked
+    if(!S.marked.has(r))return msg('Only the rows you already marked can show invalidity — the others do not have every premise true.','err');
+    S.ceMarked.has(r)?S.ceMarked.delete(r):S.ceMarked.add(r);draw();
+    return msg(`${S.ceMarked.size} row${S.ceMarked.size===1?'':'s'} picked out.`);}
+  if(S.stage!=='prem'&&S.stage!=='examval')return;
+  S.marked.has(r)?S.marked.delete(r):S.marked.add(r);draw();
+  if(S.stage==='examval')return examPanel();
+  msg(`${S.marked.size} row${S.marked.size===1?'':'s'} marked.`);
 }
 function chkPrem(){
-  const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1;
-  const want=new Set(premRows(cols,n));
-  const missed=[...want].filter(r=>!S.marked.has(r)), extra=[...S.marked].filter(r=>!want.has(r));
+  const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1,want=new Set(premRows(cols,n));
+  const missed=[...want].filter(r=>!S.marked.has(r)),extra=[...S.marked].filter(r=>!want.has(r));
   if(missed.length||extra.length)
-    return msg(`Not quite. ${missed.length?`You missed ${missed.length} row${missed.length>1?'s':''} where all the premises are true. `:''}`
-      +`${extra.length?`${extra.length} of the rows you marked ${extra.length>1?'have':'has'} at least one false premise. `:''}`
-      +`Check each premise column in turn.`,'err');
+    return msg(`Not quite. ${missed.length?`You missed ${missed.length} row${missed.length>1?'s':''} in which every premise is true. `:''}`
+      +`${extra.length?`${extra.length} of the rows you marked ${extra.length>1?'have':'has'} at least one false premise. `:''}Check each premise column in turn.`,'err');
   S.stage='verdict';draw();
-  $('final').innerHTML='<b>Step 5.</b> In those rows, what does the conclusion do?<br>'
+  $('final').innerHTML='<b>Step 5.</b> '+defn(`An argument is <b>deductively valid</b> when there is no row in which every premise is true and the conclusion is false.`)
     +'<button onclick="verdict(true)">The argument is valid</button> <button onclick="verdict(false)">The argument is invalid</button>';
-  msg(`Step 5 of 5: ${want.size} row${want.size===1?'':'s'} ha${want.size===1?'s':'ve'} all premises true. An argument is valid when the conclusion is true in every one of them — and invalid as soon as there is one where it is false.`);
+  msg(`Step 5: ${want.size} row${want.size===1?'':'s'} marked. Valid, or not?`);
 }
 function verdict(v){
   const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1,ce=counterexamples(cols,n);
-  if(v&&ce.length)return msg('Not so — there is a row with all premises true and the conclusion false. Look again at the rows you marked.','err');
-  if(!v&&!ce.length)return msg('Not so — in every row where all the premises are true, the conclusion is true too. Look again at the rows you marked.','err');
+  if(v&&ce.length)return msg('Not so — among the rows you marked there is one where the conclusion is false. Look again.','err');
+  if(!v&&!ce.length)return msg('Not so — in every row you marked, the conclusion is true as well. Look again.','err');
+  // valid: the marked rows are already the whole justification, so leave the selection alone
   if(v)return finish(S.marked.size?'In every row where all the premises are true, the conclusion is true too. The argument is valid.'
                                   :'There is no row at all in which every premise is true, so there can be no counterexample. The argument is valid.');
-  S.stage='ce';$('final').innerHTML='';draw();
-  msg('Right — now click the row that proves it: all premises true, conclusion false.');
+  // invalid: narrow the existing selection rather than starting over
+  S.ceMarked=new Set();S.stage='ce';$('final').innerHTML='';draw();
+  msg('Right — the rows you marked stay marked. Now click, from among them, at least one'
+    +(on('defs')?' in which the conclusion is false. That row is the counterexample: every premise true, conclusion false.':'.'));
+}
+function chkCE(){
+  const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1,ce=new Set(counterexamples(cols,n));
+  if(!S.ceMarked.size)return msg('Pick at least one of the marked rows.','err');
+  const bad=[...S.ceMarked].filter(r=>!ce.has(r));
+  if(bad.length)return msg(`${bad.length} of the rows you picked out ${bad.length>1?'have':'has'} a true conclusion, so ${bad.length>1?'they do':'it does'} not show invalidity. You need every premise true AND the conclusion false.`,'err');
+  finish(`${S.ceMarked.size>1?'Those rows are':'That row is'} exactly what invalidity means: every premise true, the conclusion false. The argument is invalid.`);
+}
+
+// ---- exam mode ----
+function examNext(){
+  if(S.stage==='free'){
+    const got=readRows();
+    if(!got)return msg('Fill in the left-hand columns before going on.','err');
+    S.rows=got.map(s=>{const e={};S.as.forEach((a,k)=>e[a]=s[k]===S.T);return e;});
+    if(kind()==='val'){S.marked=new Set();S.claim=undefined;S.stage='examval';draw();examPanel();
+      return msg('Give your verdict, and mark the rows that justify it. Both at once; nothing is checked until you submit.');}
+    S.stage=kind()==='cmp'?'sel':'final';draw();
+    return kind()==='cmp'?askCompare():askClassify();}
+}
+// exam mode: verdict and row selection are one step, checked only at submission
+function examPanel(){
+  $('final').innerHTML='<b>Verdict.</b> '
+    +`<button class="${S.claim===true?'sel':''}" onclick="examVerdict(true)">Valid</button> `
+    +`<button class="${S.claim===false?'sel':''}" onclick="examVerdict(false)">Invalid</button> `
+    +`<button onclick=examSubmit()>Submit</button>`
+    +`<div class=key>${S.marked.size} row${S.marked.size===1?'':'s'} marked</div>`;
+}
+function examVerdict(v){S.claim=v;examPanel();}
+// Each column is judged against what the student actually wrote in the columns it depends on,
+// so one early mistake does not make every later column count as wrong.
+function localExpect(node,si,r){
+  const b=S.sents[si].base;
+  if(node.k==='atom')return S['a'+S.as.indexOf(node.ch)+'|'+r];
+  const a=S[(b+node.a.col)+'|'+r];
+  if(a===undefined)return undefined;
+  if(node.k==='not')return a===S.T?S.F:S.T;
+  const c=S[(b+node.b.col)+'|'+r];
+  if(c===undefined)return undefined;
+  return (node.k==='and'?(a===S.T&&c===S.T):(a===S.T||c===S.T))?S.T:S.F;
+}
+function examSubmit(){
+  const steps=[];
+  if(S.nRows!==2**S.as.length)
+    steps.push(`Step 1 — the number of rows. With ${S.as.length} atomic letters the table needs ${2**S.as.length} rows; you used ${S.nRows}.`);
+  const got=readRows();
+  if(!got)steps.push('Step 2 — the columns under the atomic letters are not completely filled in.');
+  else{const first={},dup=new Set();
+    got.forEach((s,r)=>{if(first[s]===undefined)first[s]=r;else{dup.add(r);dup.add(first[s]);}});
+    if(dup.size){dup.forEach(r=>S.as.forEach((a,k)=>S['bada'+k+'|'+r]=1));
+      steps.push(`Step 2 — the rows. ${dup.size} of them repeat a combination that appears elsewhere, so the same number of combinations are missing.`);}}
+  const wrong=[];
+  Object.keys(S.cols).forEach(g=>{const{node,si}=S.cols[+g];
+    for(let r=0;r<R();r++){const want=localExpect(node,si,r),got2=S[g+'|'+r];
+      if(want===undefined||got2===undefined){if(got2===undefined)wrong.push([+g,r,'blank']);continue;}
+      if(got2!==want)wrong.push([+g,r,'wrong']);}});
+  wrong.forEach(([g,r])=>S['bad'+g+'|'+r]=1);
+  if(wrong.length){
+    const blanks=wrong.filter(w=>w[2]==='blank').length,errs=wrong.length-blanks;
+    const cols=[...new Set(wrong.filter(w=>w[2]==='wrong').map(w=>w[0]))];
+    const e1=errs===1?'1 cell does not follow from the column it is built from'
+      :`${errs} cells across ${cols.length} column${cols.length>1?'s':''} do not follow from the columns they are built from`;
+    steps.push(`Step 3 — the columns. ${errs?e1:''}${errs&&blanks?'; ':''}`
+      +`${blanks?`${blanks} cell${blanks>1?'s':''} left blank`:''}. The marked cells are the ones to look at — each is judged against what you wrote in the columns feeding it, so an early slip is not counted twice.`);}
+  // the final answer is judged against the table as the student filled it
+  let fin=null;
+  try{
+    if(kind()==='cls'){const bad=[];
+      S.sents.forEach((s,i)=>{const g=$('f'+i).value;
+        if(!g)bad.push(s.src+' (not answered)');else if(g!==classify(colOf(i)))bad.push(s.src);});
+      if(bad.length)fin=`Step 4 — the classification is not right for: ${bad.join(', ')}.`;}
+    else if(kind()==='cmp'){
+      const t=trueSets(),c=covered();
+      const wrongSet=S.sets.some(({kind:k,ids})=>{for(let a=0;a<ids.length;a++)for(let b=a+1;b<ids.length;b++)
+        if(relOf(ids[a],ids[b])!==k)return true;return false;});
+      const miss=t.eq.filter(p=>!c.eq.has(p)).length+t.ex.filter(p=>!c.ex.has(p)).length;
+      if(wrongSet||miss)fin='Step 4 — the relations. '+(wrongSet?'At least one set you recorded does not actually hold. ':'')
+        +(miss?`${miss} relation${miss>1?'s':''} that do${miss>1?'':'es'} hold ${miss>1?'were':'was'} not identified.`:'');}
+    else{const cols=S.sents.map((s,i)=>colOf(i)),n=S.sents.length-1;
+      const want=new Set(premRows(cols,n)),ce=new Set(counterexamples(cols,n));
+      if(S.claim===undefined)fin='Step 4 — no verdict given.';
+      else if(S.claim&&ce.size)fin='Step 4 — you called it valid, but there is a row with every premise true and the conclusion false.';
+      else if(!S.claim&&!ce.size)fin='Step 4 — you called it invalid, but there is no row with every premise true and the conclusion false.';
+      else if(S.claim){const miss=[...want].filter(r=>!S.marked.has(r)),ex=[...S.marked].filter(r=>!want.has(r));
+        if(miss.length||ex.length)fin='Step 4 — the verdict is right, but the rows marked are not exactly those in which every premise is true.';}
+      else{const bad=[...S.marked].filter(r=>!ce.has(r));
+        if(!S.marked.size||bad.length)fin='Step 4 — the verdict is right, but the rows marked do not all show every premise true and the conclusion false.';}}
+  }catch(e){fin='Step 4 — could not read the final answer.';}
+  if(fin)steps.push(fin);
+  S.stage='done';draw();$('final').innerHTML='<button onclick=start()>Try it again</button>';
+  if(!steps.length)return finish('Everything correct, first time, with no help. That is exam standard.');
+  msg('First problem: '+steps[0]+(steps.length>1?'\n\nAlso:\n'+steps.slice(1).map(s=>'· '+s).join('\n'):''),'err');
 }
 
 function finish(t){

@@ -50,7 +50,9 @@ There's also a **Truth Table Trainer** on the course site — no AI needed, noth
 
 **https://kennyeaswaran.github.io/lps31/**
 
-It handles all four kinds of truth-table question: classifying sentences, finding equivalent and mutually exclusive pairs, testing an argument for validity, and the week 3 presence/absence tables. The sentences from both midterms and the final are built in. It makes you work out the row count, enumerate the rows, and choose which column to compute next, then checks each column as you go — so it's practice, not an answer generator.
+It handles all four kinds of truth-table question: classifying sentences, finding equivalent and mutually exclusive pairs, testing an argument for validity, and the week 3 presence/absence tables. It makes you work out the row count, enumerate the rows, and choose which column to compute next, then checks each column as you go — so it's practice, not an answer generator.
+
+There's a row of assistance checkboxes. Start with them all on, then **turn them off one at a time** as you get comfortable — each one you switch off adds a step back that the trainer had been doing for you. When you can finish with all of them off, try **exam mode**: no hints, nothing checked until you submit, which is what the actual test feels like.
 
 ### To get a different explanation
 
