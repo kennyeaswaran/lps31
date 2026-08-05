@@ -378,8 +378,11 @@ const msg=(t,k)=>{const m=$('msg');m.className='';void m.offsetWidth;m.className
 // ---- writing your own problem ----
 // Givens may be separated by commas, semicolons or line breaks; each may be written with or
 // without the Pr(...) wrapper, so "Pr(b) = .3, Pr(a ∨ b) = .6" and "b=.3; a v b=.6" are the same.
+// Pr( ), pr( ), P( ) and p( ) are all accepted. The lookahead for the bracket is what makes
+// this safe: without it, "p & q = .3" would lose its first atomic sentence.
+const PRFX=/^\s*(?:pr|p)\s*(?=\()/i;
 function stripPr(s){
-  s=s.trim().replace(/^Pr\b\s*/i,'').trim();
+  s=s.trim().replace(PRFX,'').trim();
   if(s[0]!=='(')return s;
   let d=0;
   for(let i=0;i<s.length;i++){
@@ -388,7 +391,7 @@ function stripPr(s){
   return s;}
 function parseGivens(text){
   return text.split(/[;,\n]+/).map(x=>x.trim()).filter(Boolean).map(part=>{
-    const s=part.replace(/^\s*Pr\b\s*/i,''), eq=s.lastIndexOf('=');
+    const s=part.replace(PRFX,''), eq=s.lastIndexOf('=');
     if(eq<0)throw Error(`“${part}” needs an = and a probability.`);
     const prop=stripPr(s.slice(0,eq)), raw=s.slice(eq+1).trim(), v=parseNum(raw);
     if(!prop)throw Error(`“${part}” has no sentence before the =.`);
@@ -449,12 +452,20 @@ function useCustom(){
 
 let CUR=null, CUSTOM={g:'Pr(b) = .3, Pr(a ∨ b) = .6',t:'a & ∼b'};
 function again(){start(CUR);}
+function idle(){
+  S_={facts:[],sel:0,stage:'idle',axis:null};CUR=null;
+  $('question').innerHTML='Pick a sample problem from the menu above, or write your own.';
+  $('stage').innerHTML='';$('facts').innerHTML='';$('extra').innerHTML='';
+  draw();
+  msg('Choose a problem to begin.');}
 function init(){
-  $('prob').innerHTML=PROBS.map((p,i)=>`<option value=${i}>${p.n}</option>`).join('')
+  $('prob').innerHTML='<option value="">Select a sample problem or write your own</option>'
+    +PROBS.map((p,i)=>`<option value=${i}>${p.n}</option>`).join('')
     +'<option value=custom>— write your own problem —</option>';
   start();}
 function start(P){
   if(!P){
+    if($('prob').value==='')return idle();
     if($('prob').value==='custom')return composer();
     P=PROBS[+$('prob').value];}
   CUR=P;
