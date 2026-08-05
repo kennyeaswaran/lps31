@@ -35,6 +35,13 @@
     negation, the rows the other. Either atom may go on either axis, in either order.
   · The givens must be transcribed before any derived region can be added. Selecting the
     right region for "Pr(a ∨ b) = .6" is itself the translation step being practised.
+  · EXAM MODE removes all of that: one step, no gating, nothing judged until Submit. Note
+    that the labels cannot simply be waved through, since they are what gives every region
+    its meaning — so a bad square is recorded (labValid / labWhy), the work carries on
+    against whatever was typed, and at submission it is reported on its own, because with
+    the axes wrong nothing else can be marked. Submission is a separate button rather than
+    something triggered by writing the answer, so a student can reconsider first; and "not
+    enough information" is a toggle recording a claim, not an act of submitting.
   · A region may be labelled with a proposition, a probability, or both. A proposition is
     checked by evaluating it over the four cells and comparing truth sets, so it catches
     the student who rings the wrong region for a correct-looking sentence.
@@ -58,8 +65,20 @@
     square, so week 6 onwards is out of scope for this tool.
 
   NOTATION
-  Connectives are & ∨ ∼; input also accepts ~ for ∼ and v for ∨ in operator position.
-  Atomic sentences are lower-case. Values may be typed as decimals or fractions (.3, 3/10).
+  Connectives are & ∨ ∼; input also accepts ~ ! ¬ - for ∼, ^ ∧ for &, | for ∨, and v for ∨
+  in operator position. Atomic sentences are lower-case. Values may be typed as decimals or
+  fractions (.3, 3/10). Anything typed is echoed back in the course's notation.
+
+  WRITING YOUR OWN PROBLEM
+  The last entry in the problem menu opens a composer. Givens may be separated by commas,
+  semicolons or line breaks, and written with or without the Pr(...) wrapper, so
+  "Pr(b) = .3, Pr(a ∨ b) = .6" and "b=.3; a v b=.6" are the same thing. A problem is
+  refused if it does not use exactly two atomic sentences, if a value is outside [0,1], if
+  a contradiction is given a non-zero value or a tautology anything but 1, or if the givens
+  cannot all hold at once — that last is checked by feasible(), which asks whether any
+  assignment of the four cells within [0,1] satisfies them, not merely whether the linear
+  system is consistent. "Pr(a & b) = .8, Pr(a & ∼b) = .5" is linearly consistent and still
+  impossible.
 
   MAINTENANCE
   Everything between the //---LOGIC--- markers is pure and DOM-free: the fraction
@@ -100,6 +119,8 @@ table.wit{border-collapse:collapse;margin:.5rem 0;font-family:ui-monospace,monos
 .fact .rm{margin-left:auto;font-size:.8em;color:#a00;cursor:pointer;background:none;border:0;padding:0}
 .lab{font-size:.9rem;margin:.3rem 0}
 .lab input{width:3.4rem;text-align:center}
+#ct{width:12rem;text-align:left}
+#cg{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.95rem;padding:.4rem}
 .hint{font-size:.86em;color:#666}
 p.opt{font-size:.9em;color:#8b2018;margin:.3rem 0}
 cell{}
@@ -110,7 +131,7 @@ cell{}
 
 <p><label><b>Problem</b><br><select id=prob onchange=start()></select></label>
   <button onclick=start()>Restart</button></p>
-<p class=opt><label><input type=checkbox id=exam onchange=start()>
+<p class=opt><label><input type=checkbox id=exam onchange=again()>
   <b>Exam mode</b> — nothing is checked until you finish</label></p>
 
 <div class=q id=question></div>
@@ -255,7 +276,6 @@ function witnesses(R,mask){
 //---/LOGIC---
 
 const PROBS=[
- {n:"Pr(b)=.3, Pr(a ∨ b)=.6  →  Pr(a & ∼b)",g:[["b",".3"],["a ∨ b",".6"]],t:"a & ∼b"},
  {n:"Week 5 — Pr(b)=.3, Pr(b ∨ h)=.5  →  Pr(h & ∼b)",g:[["b",".3"],["b ∨ h",".5"]],t:"h & ∼b"},
  {n:"Week 5 — Pr(u)=.3, Pr(∼i)=.4  →  Pr(u & ∼i)",g:[["u",".3"],["∼i",".4"]],t:"u & ∼i"},
  {n:"Week 5 — three conjunctions given  →  Pr(f ∨ u)",g:[["f & ∼u",".2"],["∼f & u",".5"],["f & u",".1"]],t:"f ∨ u"},
@@ -355,14 +375,92 @@ let S_={};
 const $=id=>document.getElementById(id);
 const msg=(t,k)=>{const m=$('msg');m.className='';void m.offsetWidth;m.className=k||'';m.textContent=t;$('extra').innerHTML='';};
 
+// ---- writing your own problem ----
+// Givens may be separated by commas, semicolons or line breaks; each may be written with or
+// without the Pr(...) wrapper, so "Pr(b) = .3, Pr(a ∨ b) = .6" and "b=.3; a v b=.6" are the same.
+function stripPr(s){
+  s=s.trim().replace(/^Pr\b\s*/i,'').trim();
+  if(s[0]!=='(')return s;
+  let d=0;
+  for(let i=0;i<s.length;i++){
+    if(s[i]==='(')d++;
+    else if(s[i]===')'&&--d===0)return i===s.length-1?stripPr(s.slice(1,-1)):s;}
+  return s;}
+function parseGivens(text){
+  return text.split(/[;,\n]+/).map(x=>x.trim()).filter(Boolean).map(part=>{
+    const s=part.replace(/^\s*Pr\b\s*/i,''), eq=s.lastIndexOf('=');
+    if(eq<0)throw Error(`“${part}” needs an = and a probability.`);
+    const prop=stripPr(s.slice(0,eq)), raw=s.slice(eq+1).trim(), v=parseNum(raw);
+    if(!prop)throw Error(`“${part}” has no sentence before the =.`);
+    if(!v)throw Error(`“${raw}” is not a probability — write it as .3 or 3/10.`);
+    if(v.n<0||fnum(v)>1)throw Error(`Pr(${prop}) = ${raw} is not between 0 and 1.`);
+    return [prop,raw,v];});}
+// is there any assignment of the four cells, all between 0 and 1, satisfying these givens?
+function feasible(R){
+  if(!consistent(R))return 'those givens contradict each other';
+  const N=nullBasis(R), x0=particular(R), no='those givens cannot all hold at once';
+  const inRange=x=>x.every(v=>v.n>=0&&fnum(v)<=1);
+  if(N.length===0)return inRange(x0)?null:no;
+  if(N.length===1){
+    let lo=-Infinity,hi=Infinity;
+    for(let i=0;i<4;i++){const a=fnum(N[0][i]),b=fnum(x0[i]);
+      if(Math.abs(a)<1e-12){if(b<-1e-9||b>1+1e-9)return no;continue;}
+      const t1=-b/a,t2=(1-b)/a;
+      lo=Math.max(lo,Math.min(t1,t2));hi=Math.min(hi,Math.max(t1,t2));}
+    return lo<=hi+1e-9?null:no;}
+  return null;}   // two or more degrees of freedom: one in-range given is always satisfiable
+function makeProblem(gtext,ttext){
+  const gs=parseGivens(gtext);
+  if(!gs.length)throw Error('Give at least one probability.');
+  const t=stripPr(ttext);
+  if(!t)throw Error('Say what to find.');
+  const atoms=[];
+  [...gs.map(g=>g[0]),t].forEach(s=>{
+    let a; try{a=atomsOf(s);}catch(e){throw Error(`“${s}” could not be read as a sentence.`);}
+    a.forEach(x=>{if(!atoms.includes(x))atoms.push(x);});});
+  if(atoms.length!==2)
+    throw Error(atoms.length<2?'This square needs exactly two atomic sentences; you used '+(atoms.length||'none')+'.'
+      :`This square holds two atomic sentences, but you used ${atoms.length}: ${atoms.join(', ')}.`);
+  if(atoms.some(a=>a!==a.toLowerCase()))throw Error('Atomic sentences are written with lower-case letters.');
+  const C=[{atom:atoms[0],neg:false},{atom:atoms[0],neg:true}],
+        Rw=[{atom:atoms[1],neg:false},{atom:atoms[1],neg:true}];
+  gs.forEach(([p,raw,v])=>{const m=regionOf(p,C,Rw);
+    if(m===0&&!fz(v))throw Error(`${p} is a contradiction, so Pr(${p}) can only be 0.`);
+    if(m===15&&!feq(v,fr(1)))throw Error(`${p} is a tautology, so Pr(${p}) can only be 1.`);});
+  const bad=feasible(system(gs.map(([p,raw,v])=>({mask:regionOf(p,C,Rw),val:v}))));
+  if(bad)throw Error(bad[0].toUpperCase()+bad.slice(1)+'.');
+  // Show the problem back in the course's notation, whatever was typed: a student who
+  // enters "a v b" or "-a" should see "a ∨ b" and "∼a" in the question.
+  return{n:'your problem',g:gs.map(([p,raw])=>[norm(p),raw]),t:norm(t)};}
+function composer(){
+  $('sq').innerHTML='';$('stage').innerHTML='';$('facts').innerHTML='';$('extra').innerHTML='';
+  $('question').innerHTML=`<b>Write your own problem.</b>
+    <div class=lab style="margin-top:.5rem">Given<br>
+      <textarea id=cg rows=3 style="width:100%;max-width:26rem">${CUSTOM.g}</textarea>
+      <div class=hint>One per line, or separated by commas or semicolons.
+        <code>Pr(b) = .3, Pr(a ∨ b) = .6</code></div></div>
+    <div class=lab style="margin-top:.5rem">Find &nbsp;<input type=text id=ct size=16 value="${CUSTOM.t}">
+      <button onclick=useCustom()>Use this problem</button></div>
+    <div class=hint>Exactly two atomic sentences, written with lower-case letters.</div>`;
+  msg('Type the given probabilities and what to find, then press Use this problem.');}
+function useCustom(){
+  CUSTOM={g:$('cg').value,t:$('ct').value};
+  try{start(makeProblem(CUSTOM.g,CUSTOM.t));}catch(e){msg(e.message,'err');}}
+
+let CUR=null, CUSTOM={g:'Pr(b) = .3, Pr(a ∨ b) = .6',t:'a & ∼b'};
+function again(){start(CUR);}
 function init(){
-  $('prob').innerHTML=PROBS.map((p,i)=>`<option value=${i}>${p.n}</option>`).join('');
+  $('prob').innerHTML=PROBS.map((p,i)=>`<option value=${i}>${p.n}</option>`).join('')
+    +'<option value=custom>— write your own problem —</option>';
   start();}
-function start(){
-  const P=PROBS[+$('prob').value];
+function start(P){
+  if(!P){
+    if($('prob').value==='custom')return composer();
+    P=PROBS[+$('prob').value];}
+  CUR=P;
   const atoms=[]; [...P.g.map(x=>x[0]),P.t].forEach(s=>atomsOf(s).forEach(a=>{if(!atoms.includes(a))atoms.push(a);}));
   S_={P,atoms,cols:null,rows:null,facts:[],sel:0,stage:'label',target:P.t,exam:$('exam').checked};
-  $('question').innerHTML='<b>Given:</b> '+P.g.map(([p,v])=>`Pr(${p}) = ${v}`).join(' &nbsp;·&nbsp; ')
+  $('question').innerHTML='<b>Given:</b> '+P.g.map(([p,v])=>`Pr(${p}) = ${v}`).join(',&nbsp; ')
     +`<br><b>Find:</b> Pr(${P.t}) &nbsp;<span class=hint>— or decide there is not enough information</span>`;
   $('extra').innerHTML='';
   askLabels();
@@ -377,25 +475,39 @@ function askLabels(){
   draw();
   msg('Step 1: which sentence goes across the top, and which down the side? Either order is fine.');
 }
-function chkLabels(){
-  const v=id=>$(id).value.trim();
-  const L=['c0','c1','r0','r1'].map(id=>literal(v(id)));
-  if(L.some(x=>!x))return msg('Each label must be an atomic sentence or its negation — like a or ∼a.','err');
+// why these four labels do not define a square, or null if they do
+function labelFault(L){
+  if(L.some(x=>!x))return 'each label must be an atomic sentence or its negation — like a or ∼a';
   const [c0,c1,r0,r1]=L;
-  if(c0.atom!==c1.atom)return msg('The two columns must be the same sentence and its negation.','err');
-  if(r0.atom!==r1.atom)return msg('The two rows must be the same sentence and its negation.','err');
-  if(c0.neg===c1.neg)return msg('One column should be the sentence and the other its negation.','err');
-  if(r0.neg===r1.neg)return msg('One row should be the sentence and the other its negation.','err');
-  if(c0.atom===r0.atom)return msg('The columns and the rows must use different atomic sentences.','err');
+  if(c0.atom!==c1.atom)return 'the two columns must be the same sentence and its negation';
+  if(r0.atom!==r1.atom)return 'the two rows must be the same sentence and its negation';
+  if(c0.neg===c1.neg)return 'one column should be the sentence and the other its negation';
+  if(r0.neg===r1.neg)return 'one row should be the sentence and the other its negation';
+  if(c0.atom===r0.atom)return 'the columns and the rows must use different atomic sentences';
   if(!S_.atoms.includes(c0.atom)||!S_.atoms.includes(r0.atom))
-    return msg(`This problem is about ${S_.atoms.join(' and ')}.`,'err');
-  S_.cols=[c0,c1];S_.rows=[r0,r1];
-  S_.given=S_.P.g.map(([p,val])=>({prop:p,mask:regionOf(p,S_.cols,S_.rows),val:parseNum(val),txt:val,in:false}));
-  S_.sys=system(S_.given.map(g=>({mask:g.mask,val:g.val})));
-  S_.targetMask=regionOf(S_.target,S_.cols,S_.rows);
+    return `this problem is about ${S_.atoms.join(' and ')}`;
+  return null;}
+function chkLabels(){
+  const raw=['c0','c1','r0','r1'].map(id=>($(id)?$(id).value:(S_.lab[id]||'')).trim());
+  const L=raw.map(literal), fault=labelFault(L);
+  // In exam mode a bad square is not refused, it is recorded and reported at submission.
+  if(fault&&!S_.exam)return msg(fault[0].toUpperCase()+fault.slice(1)+'.','err');
+  S_.labValid=!fault; S_.labWhy=fault;
+  if(!fault){
+    S_.cols=[L[0],L[1]];S_.rows=[L[2],L[3]];
+    S_.axis=[lit(L[0]),lit(L[1]),lit(L[2]),lit(L[3])];
+    S_.given=S_.P.g.map(([p,val])=>({prop:p,mask:regionOf(p,S_.cols,S_.rows),val:parseNum(val),txt:val,in:false}));
+    S_.sys=system(S_.given.map(g=>({mask:g.mask,val:g.val})));
+    S_.targetMask=regionOf(S_.target,S_.cols,S_.rows);
+  }else{
+    S_.cols=null;S_.rows=null;S_.axis=raw.map(t=>t||'?');
+    S_.given=S_.P.g.map(([p,val])=>({prop:p,val:parseNum(val),txt:val,in:false}));
+  }
   S_.stage='givens';S_.sel=0;
   work();
-  msg('Labelled. Now copy in what you were given: click the cells a given probability covers, then write the number.');
+  msg(S_.exam
+    ?'Do the problem, then press Submit. Nothing is checked until you do.'
+    :'Labelled. Now copy in what you were given: click the cells a given probability covers, then write the number.');
 }
 function work(){
   // In exam mode there is no gate between copying the givens and deriving: everything is
@@ -417,7 +529,14 @@ function work(){
         probability <input type=text id=fval size=5>
         <button onclick=addFact()>Label region</button></div>
       <div class=hint>Click cells in the square to select a region (click again to unselect).</div>`
-    +(left?'':`<div style="margin-top:.7rem"><button onclick=notEnough()>There is not enough information</button></div>`);
+    +(S_.exam
+      ?`<div style="margin-top:.7rem">
+          <button class="${S_.claimNE?'sel':''}" onclick=notEnough()>There is not enough information</button>
+          <button onclick=examSubmit()>Submit</button>
+          <div class=hint>${S_.claimNE?'Claimed. Click it again to take it back, or press Submit.'
+            :'Nothing is judged until you press Submit, so you can change anything first.'}</div></div>`
+      :left?''
+      :`<div style="margin-top:.7rem"><button onclick=notEnough()>There is not enough information</button></div>`);
   draw();renderFacts();
 }
 function draw(){
@@ -432,16 +551,16 @@ function draw(){
       +` style="width:52px;text-align:center;font:17px ui-monospace,SFMono-Regular,monospace;padding:2px 0"/></foreignObject>`;
     s+=box('c0',PADL+S/2,PADT-22)+box('c1',PADL+S+S/2,PADT-22)
       +box('r0',PADL-36,PADT+S/2)+box('r1',PADL-36,PADT+S+S/2);
-  }else if(S_.cols){
-    s+=`<text x="${PADL+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[0])}</text>`
-      +`<text x="${PADL+S+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${lit(S_.cols[1])}</text>`
-      +`<text x="${PADL-14}" y="${PADT+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${lit(S_.rows[0])}</text>`
-      +`<text x="${PADL-14}" y="${PADT+S+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${lit(S_.rows[1])}</text>`;
+  }else if(S_.axis){   // whatever was typed, even if it does not define a square
+    s+=`<text x="${PADL+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${S_.axis[0]}</text>`
+      +`<text x="${PADL+S+S/2}" y="${PADT-16}" text-anchor=middle font-family=ui-monospace font-size=19>${S_.axis[1]}</text>`
+      +`<text x="${PADL-14}" y="${PADT+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${S_.axis[2]}</text>`
+      +`<text x="${PADL-14}" y="${PADT+S+S/2+7}" text-anchor=end font-family=ui-monospace font-size=19>${S_.axis[3]}</text>`;
   }
   for(let i=0;i<4;i++){const c=i%2,r=(i/2)|0;
     const on=S_.sel&(1<<i);
     s+=`<rect x="${PADL+c*S}" y="${PADT+r*S}" width="${S}" height="${S}" fill="${on?'#fff3c4':'#fff'}"
-        stroke="#333" stroke-width="2" ${S_.cols?`style="cursor:pointer" onclick="tog(${i})"`:''}/>`;}
+        stroke="#333" stroke-width="2" ${S_.axis?`style="cursor:pointer" onclick="tog(${i})"`:''}/>`;}
   // Region outlines. The depth is set by the SIZE of the region, not by when it was added:
   // a one-cell region sits one step inside the grid lines, a two-cell region two steps, a
   // three-cell region three. So the same region always lands in the same place, a smaller
@@ -506,7 +625,7 @@ function outline(mask){
     loops.push(loop);}
   return loops;
 }
-function tog(i){if(!S_.cols||S_.stage==='done')return;S_.sel^=1<<i;draw();}
+function tog(i){if(!S_.axis||S_.stage==='done')return;S_.sel^=1<<i;draw();}
 function renderFacts(){
   $('facts').innerHTML=S_.facts.length?'<b>On the square:</b>'+S_.facts.map((f,k)=>
     `<div class=fact style="cursor:pointer" title="click to select these cells" onclick="selRegion(${f.mask})">
@@ -554,16 +673,13 @@ function addFact(){
   else S_.facts.push({mask,prop,val,txt:val?fstr(val):''});
   S_.given.forEach(g=>{if(g.mask===mask&&val&&feq(val,g.val))g.in=true;});
   S_.sel=0;$('fprop').value='';$('fval').value='';
-  if(S_.exam){
-    // finished when some region has been labelled with the target proposition and a number
-    const done=S_.facts.find(f=>f.val&&propRegion(f.prop)===S_.targetMask);
-    if(done)return examGrade(false);
-    renderFacts();draw();return msg('Recorded.');}
+  // In exam mode nothing is submitted automatically: the student decides when they are done.
+  if(S_.exam){renderFacts();draw();return msg('Recorded. Press Submit when you are ready.');}
   // Finished only when the target region carries BOTH a proposition and its probability:
   // naming the region is half the exercise, so a bare number is not yet an answer.
   const tf=S_.facts.find(f=>f.mask===S_.targetMask);
   if(tf&&tf.prop&&tf.val&&determined(S_.sys,S_.targetMask)&&feq(tf.val,valueOf(S_.sys,S_.targetMask))){
-    S_.stage='done';draw();renderFacts();$('stage').innerHTML='<button onclick=start()>Run it again</button>';
+    S_.stage='done';draw();renderFacts();$('stage').innerHTML='<button onclick=again()>Run it again</button>';
     return msg(`✓  Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}. That is the answer.`,'win');}
   work();
   if(tf&&tf.val&&!tf.prop)
@@ -573,11 +689,14 @@ function addFact(){
   else msg(S_.given.every(g=>g.in)?`Added. Keep going until Pr(${S_.target}) is on the square with its probability.`:'Added.');
 }
 function notEnough(){
-  if(S_.exam)return examGrade(true);
+  if(S_.exam){S_.claimNE=!S_.claimNE;work();
+    return msg(S_.claimNE
+      ?'Recorded as your answer: not enough information. Press Submit when you are ready, or click it again to take it back.'
+      :'Taken back.');}
   if(S_.stage!=='derive')return msg('Copy in the given probabilities first — until they are on the square there is nothing to judge.','err');
   if(determined(S_.sys,S_.targetMask))
     return msg(`Not so — Pr(${S_.target}) is fixed by what you were given. Keep working: ring the regions you can already put a number on, and see what that forces.`,'err');
-  S_.stage='done';draw();$('stage').innerHTML='<button onclick=start()>Run it again</button>';
+  S_.stage='done';draw();$('stage').innerHTML='<button onclick=again()>Run it again</button>';
   const w=witnesses(S_.sys,S_.targetMask);
   msg(`✓  Correct — there is not enough information to determine Pr(${S_.target}).`
     +(w?`\n\nIt is still pinned down to a range: anything from ${fstr(dot(S_.targetMask,w[0]))} to ${fstr(dot(S_.targetMask,w[1]))} is possible.`:''),'win');
@@ -600,8 +719,24 @@ function propRegion(p){
   }catch(e){return null;}}
 // Exam mode marking: everything the student wrote is judged at once, and every mistake is
 // reported rather than only the first, since there is no chance to correct as they go.
-function examGrade(claimNotEnough){
+function examSubmit(){
+  const finish=()=>{S_.stage='done';draw();renderFacts();
+    $('stage').innerHTML='<button onclick=again()>Try it again</button>';};
+  // The labels give every region its meaning, so if they are wrong nothing else can be
+  // marked. That is one error, reported on its own rather than buried in a list.
+  if(!S_.labValid){finish();
+    return msg(`The labels do not define a square: ${S_.labWhy}.\n\n`
+      +`Everything on the square depends on them, so nothing else could be marked.`,'err');}
+  const tf=S_.facts.find(f=>f.val&&propRegion(f.prop)===S_.targetMask);
+  if(!S_.claimNE&&!tf){
+    return msg(`No answer yet. Either label a region with ${S_.target} and its probability, `
+      +`or say there is not enough information — then press Submit.`,'err');}
+  return examGrade(S_.claimNE,tf);
+}
+function examGrade(claimNotEnough,tf){
   const det=determined(S_.sys,S_.targetMask), errs=[];
+  if(claimNotEnough&&tf)
+    errs.push(`You claimed there is not enough information but also gave Pr(${S_.target}) = ${tf.txt}.`);
   S_.facts.forEach(f=>{
     const nm=f.prop?`Pr(${f.prop})`:'that region', pm=propRegion(f.prop);
     if(f.prop&&pm===null)
@@ -624,11 +759,10 @@ function examGrade(claimNotEnough){
     errs.push(`Pr(${S_.target}) is in fact determined by what you were given: it is ${fstr(valueOf(S_.sys,S_.targetMask))}.`);
   if(!claimNotEnough){
     if(!det)errs.push(`Pr(${S_.target}) is not determined by the givens — the answer here was that there is not enough information.`);
-    else{const tf=S_.facts.find(f=>f.val&&propRegion(f.prop)===S_.targetMask);
-      if(tf&&!feq(tf.val,valueOf(S_.sys,S_.targetMask)))
-        errs.push(`The answer is wrong: Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}, not ${tf.txt}.`);}}
+    else if(tf&&!feq(tf.val,valueOf(S_.sys,S_.targetMask)))
+      errs.push(`The answer is wrong: Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}, not ${tf.txt}.`);}
   S_.stage='done';draw();renderFacts();
-  $('stage').innerHTML='<button onclick=start()>Try it again</button>';
+  $('stage').innerHTML='<button onclick=again()>Try it again</button>';
   if(!errs.length)return msg(claimNotEnough
     ?`✓  Correct — there is not enough information to determine Pr(${S_.target}). Everything you put on the square was right too, with no help.`
     :`✓  Pr(${S_.target}) = ${fstr(valueOf(S_.sys,S_.targetMask))}. Right first time, with no checking along the way.`,'win');
