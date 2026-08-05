@@ -14,9 +14,10 @@ Related caution: the repository currently lives inside Dropbox, which is a known
 
 | File | Purpose |
 |---|---|
-| `LPS31-AI-study-guide.md` | The main deliverable. Written **for an AI assistant to read**, uploaded by a student at the start of a chat. Course scope, notation, tutoring policy, week-by-week content, a verified answer key (Appendix A), and truth-table practice guidance (Appendix C). |
+| `LPS31-AI-study-guide.md` | The main deliverable. Written **for an AI assistant to read**, uploaded by a student at the start of a chat. Course scope, notation, tutoring policy, week-by-week content, a verified answer key (Appendix A), truth-table practice guidance (Appendix C), and the method for deciding what follows from given probabilities (Appendix D). |
 | `how-to-study-with-AI.html` | Short student-facing page. Written for the student, not the assistant. Was a `.md` until it was converted to HTML so students read it in the browser rather than downloading it; there is deliberately no `.md` copy, to avoid two versions drifting apart. |
 | `truth-table-trainer.html` | Self-contained interactive trainer, served on the website. No dependencies, no network. |
+| `probability-engine.js` | The mathematics of the square on its own, linked from Appendix D. Useful to an assistant that can run code. |
 | `probability-square.html` | Self-contained 2×2-square drill for the week 5/6 probability problems. Decides what follows from the givens by solving the constraint system exactly (rref over rationals), so it has no stored answer key and treats "not enough information" as a real answer. Unconditional probabilities only — conditional probability is not a region of the square. |
 | `index.html` | Landing page for the site. Sections run: AI assistant → practice tools → notes → footer. |
 | `.nojekyll` | **Do not delete.** Without it GitHub Pages runs Jekyll, which converts the `.md` files to HTML and breaks the download links. |
@@ -31,7 +32,7 @@ Published at **https://kennyeaswaran.github.io/lps31/** from the `main` branch, 
 - The trainer is tested headlessly with `jsdom` before deployment — parser and evaluator against an independent evaluator over every sentence used in the course, plus an end-to-end walkthrough of all nine course problem sets in every mode. Do not edit and ship it without re-running those.
 - Truth tables in the answer key show **one column under each atomic letter and each connective**, not just the final value. Generate them programmatically; they are too error-prone by hand.
 
-**Appendix C's embedded applet is deliberately the compact single-sentence version**, not a copy of `truth-table-trainer.html`. It is small enough to survive being reproduced by an assistant, and free-tier ChatGPT chunks uploaded files for retrieval, so a 570-line code block would come back truncated. Keep them separate; the guide points at the hosted trainer for the full thing.
+**No source listings in the guide.** Appendix C once embedded a 206-line applet and Appendix D a 79-line engine; both were removed. Free-tier ChatGPT chunks an uploaded file and retrieves by relevance, and the applet alone was as large as the guide's entire core — notation, scope, rules, tutoring policy — so it competed for retrieval slots against the material that actually changes what an assistant does, while being almost never the right answer to a student's question. The appendices keep the *methods* and the interaction specs, which are compact and work with no code execution; the code lives on the website. Do not put listings back in.
 
 **Course notation** — the most common way to get this wrong is to import standard math-stats conventions. Probability attaches to *sentences*, not sets: `Pr(a & b)`, never `P(A ∩ B)`. Connectives are `&`, `∨`, `∼`. Rules are numbered 0–8 with Rule 4 = special disjunction and Rule 5 = negation (an earlier draft had these swapped in one section; the Week 4 numbering is authoritative). Students are never required to cite rules by number.
 
