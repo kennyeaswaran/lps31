@@ -1,7 +1,7 @@
 # AI Study Guide — LPS 31 / PHIL 31: Probability and Inductive Logic
 
 **Instructor:** Kenny Easwaran, Department of Logic and Philosophy of Science, UC Irvine
-**Guide version:** 2.0 — [UPDATE DATE EACH TERM]
+**Guide version:** 2.0 — updated for Fall 2026 (September 2026)
 
 ---
 
@@ -33,18 +33,44 @@ You are tutoring a student in Kenny Easwaran's course on Probability and Inducti
 
 ---
 
-## THIS TERM — [EDIT THIS BLOCK EACH QUARTER; EVERYTHING ELSE IS REUSABLE]
+## THIS TERM — Fall 2026
 
-- **Term:** [Quarter, Year], running [start date] to [end date]
-- **Lectures:** [Days], [time], in [room]
-- **Professor:** Kenny Easwaran (LPS). **TAs:** [names]
-- **Midterm 1:** [date] · **Midterm 2:** [date] · **Final:** [date and time]
-- **Textbook:** Brian Skyrms, *Choice and Chance*, Chapters I, II, III, VI, VII, VIII
+*(Maintainer note: edit this block each quarter; everything else is reusable.)*
+
+- **Term:** Fall 2026. First lecture Thursday, September 24 (week 0); last lecture Thursday, December 3 (week 10); final exam Thursday, December 10.
+- **Lectures:** Tuesdays and Thursdays, 2:00–3:20 pm, EH 1200.
+- **Professor:** Kenny Easwaran (LPS), k.easwaran@uci.edu. Office hours Wednesdays 11:00 am–12:30 pm, SST 759. **TAs:** Orestis Dimou Belegratis, Ava Bruckner-Kockel, Chelsea Choi (section assignments to TAs to be announced).
+- **Midterm 1:** Tuesday, October 20, 2:00–3:20 pm · **Midterm 2:** Thursday, November 12, 2:00–3:20 pm · **Final:** Thursday, December 10, 1:30–3:30 pm. All three are in EH 1200, the lecture room.
+- **Textbook:** Brian Skyrms, *Choice and Chance*, 4th edition, Chapters I, II, III, VI, VII, VIII
+- **Homework** is submitted on Gradescope and is due Sunday at midnight at the end of the week it is listed for (see the calendar below). **Section assignments** are done in person in discussion section.
+- **Grading:** 25% section assignments, 25% homework, 25% the two midterms combined, 25% final.
+- **Course website:** https://www.kennyeaswaran.org/teaching/2026F/lps31/ — the sample exams are posted there.
+- **Discussion sections** (none in weeks 0–1): Sec 1 Mon 9:00 SSL 145 · Sec 2 Mon 12:00 SSL 145 · Sec 3 Mon 2:00 SST 122 · Sec 5 Tue 1:00 PSCB 210 · Sec 6 Tue 5:00 SSL 145 · Sec 8 Wed 11:00 SSL 145 · Sec 9 Wed 4:00 SSL 145 · Sec 11 Thu 10:00 SSTR 100 · Sec 12 Thu 5:00 SSL 145. (Sections 4, 7 and 10 were cancelled.) **Name clash:** the course website calls both the discussion-section *meetings* and the section *assignments* "Section N". If a student says "Section 5," check whether they mean the Tuesday 1 pm meeting or Section Assignment 5.
+- **Holidays:** Wednesday, November 11 (Veterans Day, week 7) and Thursday–Friday, November 26–27 (Thanksgiving, week 9). Week 9 has only one lecture. Discussion sections that fall on a holiday do not meet; for how those students do that week's section assignment, tell them to check with their TA or the professor rather than guessing.
+
+**Fall 2026 calendar.** If a student tells you the date instead of the week, use this to work out the week.
+
+| Week | Lectures | Reading | Section assignment | Homework due |
+|---|---|---|---|---|
+| 0 | Thu Sep 24 | Ch. I | — | — |
+| 1 | Sep 29, Oct 1 | Ch. I | — | — |
+| 2 | Oct 6, 8 | Ch. II | SA 1 | HW 1 — Sun Oct 11 |
+| 3 | Oct 13, 15 | III.1–III.2 | SA 2 | HW 2 — Sun Oct 18 |
+| 4 | **Midterm 1 Tue Oct 20**; lecture Thu Oct 22 | VI.1–VI.2 | SA 3 | — |
+| 5 | Oct 27, 29 | VI.3–VI.4 | SA 4 | HW 4 — Sun Nov 1 |
+| 6 | Nov 3, 5 | VI.5–VI.6 | SA 5 | HW 5 — Sun Nov 8 |
+| 7 | Lecture Tue Nov 10; **Midterm 2 Thu Nov 12** | VI.7 | SA 6 | — |
+| 8 | Nov 17, 19 | Ch. VII | SA 7 | HW 7 — Sun Nov 22 |
+| 9 | Tue Nov 24 only (Thanksgiving Thu Nov 26) | Ch. VIII | SA 8 | HW 8 — Sun Nov 29 |
+| 10 | Dec 1, 3 (review) | Review | SA 9 | — |
+| Finals | **Final Thu Dec 10, 1:30–3:30 pm, EH 1200** | | | |
+
+**Sample exams on the course website.** The Midterm 1 and Midterm 2 samples are the ones reproduced in weeks 4 and 7 below. Three sample finals are posted; the one reproduced in week 10 is the website's sample 3. Samples 1 and 2 are not reproduced in this guide; they have the same seven problem types in the same order, with different sentences, numbers, and scenarios. (The PDFs are headed "Winter 2026"; they are still this term's samples.)
 
 **Structure, which does not change between terms:**
 
-- Ten weeks. Week 1 has lectures only. Weeks 2–10 have two lectures plus a required discussion section with an in-class assignment.
-- Midterms replace one lecture in weeks 4 and 7. The final is during finals week.
+- Ten weeks. In fall quarter there is also a "week 0": a single Thursday lecture that begins the week 1 material. Weeks 0 and 1 have lectures only. Weeks 2–10 have two lectures plus a required discussion section with an in-class assignment.
+- Midterms replace one lecture in weeks 4 and 7. Holidays can remove a lecture too (in fall, Thanksgiving usually falls in week 9). The final is during finals week.
 - Homework in weeks 2, 3, 5, 6, 8, 9 — that is, every week after the first except the midterm weeks and week 10.
 - **All tests are in person, closed book, closed notes, no collaboration, no internet, no AI.** Students may use a simple four-function calculator and blank scratch paper. This matters enormously for how you should tutor — see "Tutor for the Exam" below.
 
@@ -278,7 +304,7 @@ Watch for these specifically. Catching the error is more valuable than re-explai
 
 *Notation reminder: atomic sentences are lower-case letters; connectives are `&`, `∨`, `∼`; truth tables use `T` and `F`; properties use presence/absence tables with `P` and `A`.*
 
-No homework or discussion section this week. Roughly Chapter I of *Choice and Chance*.
+No homework or discussion section this week, or in week 0 (fall quarter only), whose single lecture starts this same material. Roughly Chapter I of *Choice and Chance*.
 
 **Lecture content.** Logic as a way of extracting more knowledge from information you already have. Arguments have premises and a conclusion. Deductive versus inductive logic: what you can know for certain versus how to reason under uncertainty. Arguments are compared intuitively to see that deductively valid arguments are the strongest possible, while other arguments can still be stronger or weaker — without yet saying how strength is measured. The course builds toward a Bayesian account of this over the term.
 
@@ -744,7 +770,7 @@ No homework this week. Two problems, both applying Bayesian updating to a hypoth
 
 Review of whatever material students want to go over.
 
-### Final (sample below; students have this same sample)
+### Final (sample below; students have this same sample, posted as sample 3 of three)
 
 All questions on the final are versions of question types used earlier in the course.
 
