@@ -1,7 +1,7 @@
 # AI Study Guide — LPS 31 / PHIL 31: Probability and Inductive Logic
 
 **Instructor:** Kenny Easwaran, Department of Logic and Philosophy of Science, UC Irvine
-**Guide version:** 2.0 — updated for Fall 2026 (September 2026)
+**Guide version:** 2.1 — updated for Fall 2026 (October 2026)
 
 ---
 
@@ -388,6 +388,11 @@ Example: `D ∨ ∼E`, `∼D & E`, `∼(D & E)`, `∼D ∨ ∼E`.
 
 When generating new versions, include one that is deductively valid, one clearly very strong but not valid, one where the premises make the conclusion fairly probable, one leaving the conclusion near 50/50, and one where the premises make the conclusion *unlikely*.
 
+**Two mistakes to avoid when writing these and their keys.** Both have turned up in AI-generated practice sets.
+
+- **Rank by how probable the premises make the conclusion — not by how good the stated reasoning is.** A fallacious argument is not automatically the weakest. "A fair coin has landed heads ten times in a row, so the next toss will definitely be tails, to balance it out" commits the gambler's fallacy, but on those premises the conclusion still has probability 1/2. That makes it a near-50/50 argument, *stronger* than "a deck is shuffled and I draw one card, so it's the ace of spades" (1/52). Name the fallacy, then rank the argument where its probability puts it. (Without "fair" in the premises, ten heads in a row is some evidence of a biased coin, which pushes tails somewhat *below* 1/2 — still nowhere near 1/52. Say the coin is fair when writing these, so the number is clean.) In the example above, (b) fills the *unlikely* slot because two failed hires are, if anything, evidence that the next will fail too — not simply because "third time's the charm" is bad reasoning.
+- **Don't set a strong enumerative induction against a very high precise chance or frequency.** "Every raven I've ever seen has been black, so the next one I see will be black" against "the urn holds 998 blue balls and 2 red, so the ball I draw will be blue" (99.8%) has no settled order: how strong "every one I've seen" is depends on how many were seen, how varied they were, and what else the reasoner knows. A key that ranks either one first is marking students on an arbitrary call. Comparing a strong track-record argument with a chance or frequency in roughly the 70–85% range is fair — the sample Midterm 1 ranks the alarm-clock argument (c) above the 75% medication argument (b) — but that does **not** mean such arguments beat every frequency short of 100%. If a set includes a strong enumerative induction, keep every precise chance or frequency in it at about 85% or below.
+
 This problem does not ask about the *source* of the strength, but the midterm does, so quiz on that too. In this example, (d) rests on frequency; (b), (c), and (e) rest on broader inductive considerations, though (c) has an important frequency component. Good generated examples should include one or two resting on objective chance, which none of these do.
 
 **Problem 3 — Added premises.** Given an argument, produce premises that would make it stronger, weaker, or deductively valid.
@@ -456,6 +461,8 @@ Every question type has appeared on a previous homework or section assignment ex
 > - What does it mean for an argument to be deductively valid, and how can truth tables be used to identify it?
 
 *Answers in Appendix A. Problems 1–3 are truth tables under time pressure — drill them with the **Appendix C** protocol, and time the student, since 55 points of this midterm turn on doing them quickly and accurately by hand.*
+
+*Problem 4 is the same type as Week 3, Problem 2. Before generating a practice version or a key for it, read the two cautions there: rank a fallacious argument by the probability of its conclusion, not last by default; and don't pit a strong enumerative induction against a chance or frequency above about 85%.*
 
 ### Section Assignment 3
 
@@ -1157,6 +1164,8 @@ F  F │ F
 **Problem 4** (ranking — judgment, but the intended order):
 Strongest **(d)**, then **(c)**, then **(b)**, then **(e)**, then **(a)**.
 (d) is deductively valid — 13 points behind, maximum gain 12. (c) is very strong but not valid. (b) is 75%. (e) is 50/50. (a) is 1/6, so the premises make the conclusion *unlikely*.
+
+Two things this key does *not* imply (see the cautions under Week 3, Problem 2). (c) beats (b) because 75% is only moderately high; it does not follow that a track-record argument like (c) beats a 95% or 99% frequency. And (e) is above (a) because 1/2 is more than 1/6 — the same reasoning puts a gambler's-fallacy argument (probability 1/2 on its premises) above a 1/52 one, however bad its stated reasoning.
 
 **Problem 5**
 - **Primarily objective chance:** (b) — well-shuffled deck, randomly dealt.
