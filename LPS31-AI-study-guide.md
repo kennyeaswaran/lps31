@@ -1,7 +1,7 @@
 # AI Study Guide — LPS 31 / PHIL 31: Probability and Inductive Logic
 
 **Instructor:** Kenny Easwaran, Department of Logic and Philosophy of Science, UC Irvine
-**Guide version:** 2.1 — updated for Fall 2026 (October 2026)
+**Guide version:** 2.1 — Fall 2026, updated October 17, 2026
 
 ---
 

@@ -26,6 +26,8 @@ Published at **https://kennyeaswaran.github.io/lps31/** from the `main` branch, 
 
 ## Standing conventions
 
+**Version and date appear in three places — keep them in sync.** The guide's header line, the yellow note and button label on the guide's card in `index.html`, and the sentence linking the guide in `how-to-study-with-AI.html`. When the guide changes in a way students should re-download for, bump the version in all three and update the one-line "what changed" in `index.html`.
+
 **Verify, do not assert.** Everything in this project has been checked mechanically, and that expectation continues.
 
 - The Appendix A answer key was computed in Python and cross-checked against an independent evaluator. All 792 truth-table cells across 29 tables verify. If you change a table or add a problem, re-run that check rather than reasoning it out by hand.
